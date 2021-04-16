@@ -7,6 +7,10 @@ import torch
 import torchvision
 
 
+def rand(min: float, max: float) -> float:
+    return numpy.random.rand() * (max - min) + min
+
+
 class Compose(object):
     """
     复合多种变换操作
@@ -30,7 +34,10 @@ def get_transforms(config: dict, train: bool) -> Compose:
     transforms = []
     if train:
         transforms.append(ReformAndExtractBoxes())
-        transforms.append(ScaleImageAndBoxes(config=config))
+        # transforms.append(ScaleImageAndBoxes(config=config))
+        transforms.append(RandomScaleImageAndBoxes(config=config))
+        transforms.append(RandomTransformImage())
+        transforms.append(RandomFlipImageAndBoxes(config=config))
         transforms.append(NormImageAndBoxes(config=config))
     else:
         transforms.append(ScaleImage(config=config))
@@ -92,6 +99,87 @@ class ScaleImageAndBoxes(object):
         scaled_boxes[:, 0:4] = raw_boxes[:, 0:4] * scale
         scaled_boxes[:, 0] += (scaled_width - nw) // 2
         scaled_boxes[:, 1] += (scaled_height - nh) // 2
+
+        return new_image, scaled_boxes
+
+
+class RandomScaleImageAndBoxes(object):
+    """
+    boxes 和 image 的 等随机比例放缩
+    """
+
+    def __init__(self, config: dict) -> None:
+        super().__init__()
+
+        self.config = config
+
+    def __call__(self, raw_image: PIL.Image.Image, raw_boxes: numpy.ndarray) -> (PIL.Image.Image, numpy.ndarray):
+        # 1. 图像原始大小，图像放缩后大小
+        raw_width, raw_height = raw_image.size
+        scaled_width = self.config["image_width"]
+        scaled_height = self.config["image_height"]
+
+        # 2. 计算图像放缩倍数，取最小的那个放缩值
+        scale = min(scaled_width / raw_width, scaled_height / raw_height)
+        scale = rand(0.5, 1.0) * scale  # 0.5 ~ 1.0 scale
+
+        # 3. 等比例放缩后的图像大小
+        nw = int(raw_width * scale)
+        nh = int(raw_height * scale)
+
+        # 4. 图像等比例放缩
+        scaled_image = raw_image.resize((nw, nh), PIL.Image.BICUBIC)
+
+        # 5. 填补图像边缘
+        new_image = PIL.Image.new("RGB", (scaled_width, scaled_height), (128, 128, 128))  # 创建一张灰色底板作为返回的图像
+        new_image.paste(scaled_image, ((scaled_width - nw) // 2, (scaled_height - nh) // 2))  # 等比例放缩后的图像粘贴到底板中央
+
+        # 6. 变换 boxes
+        scaled_boxes = raw_boxes.copy()
+        scaled_boxes[:, 0:4] = raw_boxes[:, 0:4] * scale
+        scaled_boxes[:, 0] += (scaled_width - nw) // 2
+        scaled_boxes[:, 1] += (scaled_height - nh) // 2
+
+        return new_image, scaled_boxes
+
+
+class RandomTransformImage(object):
+    """
+    随机变换图片
+    """
+
+    def __call__(self, scaled_image: PIL.Image.Image, scaled_boxes: numpy.ndarray) -> (PIL.Image.Image, numpy.ndarray):
+        new_image = torchvision.transforms.ColorJitter(
+            brightness=rand(0.5, 1.5),  # 亮度的偏移幅度
+            contrast=rand(0.5, 1.5),  # 对比度偏移幅度
+            saturation=rand(0.5, 1.5),  # 饱和度偏移幅度
+            hue=rand(0.0, 0.5),  # 色相偏移幅度
+        )(scaled_image)
+        if rand(0.0, 1.0) < 0.1:
+            new_image = torchvision.transforms.Grayscale(num_output_channels=3)(new_image)
+
+        return new_image, scaled_boxes
+
+
+class RandomFlipImageAndBoxes(object):
+    """
+    随机翻转图片
+    """
+
+    def __init__(self, config: dict) -> None:
+        super().__init__()
+
+        self.config = config
+
+    def __call__(self, scaled_image: PIL.Image.Image, scaled_boxes: numpy.ndarray) -> (PIL.Image.Image, numpy.ndarray):
+        new_image = scaled_image
+        if rand(0.0, 1.0) < 0.5:
+            new_image = torchvision.transforms.RandomHorizontalFlip(p=2)(new_image)
+            scaled_boxes[:, 0] = self.config["image_width"] - scaled_boxes[:, 0]
+
+        if rand(0.0, 1.0) < 0.5:
+            new_image = torchvision.transforms.RandomVerticalFlip(p=2)(new_image)
+            scaled_boxes[:, 1] = self.config["image_height"] - scaled_boxes[:, 1]
 
         return new_image, scaled_boxes
 

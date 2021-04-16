@@ -3,11 +3,22 @@
 rm -rf /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 
 mkdir /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
-cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
-cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_pennfudan_with_eval.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/run.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
-cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/kill.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/map.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_process.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_run.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_gpu.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_pennfudan_with_eval.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_pennfudan_with_loss.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_voc_with_loss.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_voc_with_eval.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
+
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/compute_map.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 
 mkdir /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp/conf
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/conf/coco.names /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp/conf

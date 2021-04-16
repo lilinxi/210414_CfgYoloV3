@@ -116,7 +116,7 @@ def train_one_epoch(
     validate_loss = total_validate_loss / validate_batch_num
 
     # 2. 显示结果
-    ret = "Epoch%d-Train_Loss%.4f-Val_Loss%.4f" % (epoch + 1, train_loss, validate_loss)
+    ret = "Epoch%03d-Train_Loss%.4f-Val_Loss%.4f" % (epoch + 1, train_loss, validate_loss)
     # print(ret)
 
     # 3. 保存权重
@@ -167,11 +167,11 @@ if __name__ == "__main__":
     print("config:\n", Config)
 
     # 提示 OOM 或者显存不足请调小 Batch_size
-    Train_Batch_Size = 16
-    Eval_Batch_Size = 8
+    Train_Batch_Size = 64
+    Eval_Batch_Size = 16
 
     Init_Epoch = 0  # 起始世代
-    Freeze_Epoch = 20  # 冻结训练的世代
+    Freeze_Epoch = 50  # 冻结训练的世代
     Unfreeze_Epoch = 1000  # 总训练世代
 
     Freeze_Epoch_LR = 1e-3
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     Num_Workers = 12
     Suffle = True
 
-    Test_Name = "Voc_Test2"
+    Test_Name = "Voc_Test3"
 
     # 2. 创建 yolo 模型，训练前一定要修改 Config 里面的 classes 参数，训练的是 YoloNet 不是 Yolo
     yolov3_net = model.yolov3net.YoloV3Net(Config)

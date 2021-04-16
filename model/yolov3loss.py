@@ -60,7 +60,7 @@ class YoloV3Loss(torch.nn.Module):
         self.lambda_wh = 1.0  # 预测框大小误差权重
         self.lambda_noobj = 1.0  # 预测框置信度误差权重
         self.lambda_obj = 1.0  # 预测框置信度误差权重
-        self.lambda_class = 5.0  # 预测框类别误差权重
+        self.lambda_class = 1.0  # 预测框类别误差权重
         self.lambda_conf = 1.0  # 预测框类别误差权重
 
         self.normd_anchors = numpy.asarray(config["anchors"]).astype(numpy.float32)

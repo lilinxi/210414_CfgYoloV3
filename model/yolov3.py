@@ -79,29 +79,12 @@ class YoloV3(object):
             )
 
         if predict_bbox_attrs_after_nms[0] == None:
-            return numpy.asarray([]).astype(numpy.int), predict_feature_list
+            return None, predict_feature_list
         else:
-            return numpy.around(predict_bbox_attrs_after_nms[0].numpy()).astype(numpy.int), predict_feature_list
+            return numpy.around(predict_bbox_attrs_after_nms[0].cpu().numpy()).astype(numpy.int), predict_feature_list
 
     def predict_with_eval(self, tensord_image: torch.Tensor, truth_annotation: dict) -> None:
-        # 1. 获取预测框
-        predict_boxes, _ = self.predict(tensord_image)
-        # 2. 解析预测框
-        predict_boxes = self.rescale_boxes(predict_boxes)
-        # 3. 记录预测框
-        detection_result = open(
-            os.path.join(
-                os.getcwd(),
-                "outer_map_input",
-                "detection_result",
-                truth_annotation["filename"].split(".")[0] + ".txt"
-            ),
-            "w"
-        )
-        for predict_box in predict_boxes:
-            (xmin, ymin, xmax, ymax, conf, label) = predict_box
-            detection_result.write("%s %s %s %s %s %s\n" % (self.config["labels"][label], conf, xmin, ymin, xmax, ymax))
-        # 4. 记录真值框
+        # 1. 记录真值框
         ground_truth = open(
             os.path.join(
                 os.getcwd(),
@@ -115,22 +98,33 @@ class YoloV3(object):
             (xmin, ymin, xmax, ymax, label) = truth_box
             ground_truth.write("%s %s %s %s %s\n" % (self.config["labels"][label], xmin, ymin, xmax, ymax))
 
-    def predict_with_loss(self, tensord_image: torch.Tensor, tensord_boxes: torch.Tensor) -> PIL.Image.Image:
-        # 1. 获取预测框
-        predict_boxes, predict_feature_list = self.predict(tensord_image)
-        # 2. 转为 PIL.Image.Image
-        image = torchvision.transforms.ToPILImage()(tensord_image)
-        # 3. 绘制预测框（红）
+        # 2. 记录预测框
+        detection_result = open(
+            os.path.join(
+                os.getcwd(),
+                "outer_map_input",
+                "detection_result",
+                truth_annotation["filename"].split(".")[0] + ".txt"
+            ),
+            "w"
+        )
+        # 3. 获取预测框
+        predict_boxes, _ = self.predict(tensord_image)
+        if predict_boxes is None:
+            print("predict_boxes is None")
+            return
+        # 4. 解析预测框
+        predict_boxes = self.rescale_boxes(truth_annotation["raw_image"], predict_boxes)
+        # 5. 写入预测框
         for predict_box in predict_boxes:
             (xmin, ymin, xmax, ymax, conf, label) = predict_box
-            draw = PIL.ImageDraw.Draw(image)
-            draw.rectangle([xmin, ymin, xmax, ymax], outline="#FF0000")
-            # 绘制标签
-            font = PIL.ImageFont.truetype("/Users/limengfan/PycharmProjects/210414_CfgYoloV3/assets/simhei.ttf", 32)
-            draw.text([xmin, ymin, xmax, ymax], self.config["labels"][label], font=font, fill="#FF0000")
-            del draw
+            detection_result.write(
+                "%s %s %s %s %s %s\n" % (self.config["labels"][label], conf, xmin, ymin, xmax, ymax))
 
-        # 4. 绘制真值框（绿）
+    def predict_with_loss(self, tensord_image: torch.Tensor, tensord_boxes: torch.Tensor) -> PIL.Image.Image:
+        # 1. 转为 PIL.Image.Image
+        image = torchvision.transforms.ToPILImage()(tensord_image)
+        # 2. 绘制真值框（绿）
         scaled_boxes = self.renorm_and_reform_boxes(tensord_boxes.cpu())
         for truth_box in scaled_boxes:
             (xmin, ymin, xmax, ymax, label) = truth_box
@@ -139,6 +133,20 @@ class YoloV3(object):
             # 绘制标签
             font = PIL.ImageFont.truetype("/Users/limengfan/PycharmProjects/210414_CfgYoloV3/assets/simhei.ttf", 32)
             draw.text([xmin, ymin, xmax, ymax], self.config["labels"][label], font=font, fill="#00FF00")
+            del draw
+        # 3. 获取预测框
+        predict_boxes, predict_feature_list = self.predict(tensord_image)
+        if predict_boxes is None:
+            print("predict_boxes is None")
+            return image
+        # 4. 绘制预测框（红）
+        for predict_box in predict_boxes:
+            (xmin, ymin, xmax, ymax, conf, label) = predict_box
+            draw = PIL.ImageDraw.Draw(image)
+            draw.rectangle([xmin, ymin, xmax, ymax], outline="#FF0000")
+            # 绘制标签
+            font = PIL.ImageFont.truetype("/Users/limengfan/PycharmProjects/210414_CfgYoloV3/assets/simhei.ttf", 32)
+            draw.text([xmin, ymin, xmax, ymax], self.config["labels"][label], font=font, fill="#FF0000")
             del draw
         # 5. 计算损失
         loss = self.yolov3_loss(predict_feature_list, [tensord_boxes])

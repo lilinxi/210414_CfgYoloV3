@@ -1,9 +1,16 @@
+import numpy
+
+import torch
+
 import conf.config
 import dataset.voc_dataset
 import model.yolov3
 
-
 if __name__ == "__main__":
+    # 0. 确保每次的伪随机数相同以便于问题的复现
+    numpy.random.seed(0)
+    torch.manual_seed(1)
+
     # 1. 配置文件
     Config = conf.config.VocConfig
 
@@ -26,9 +33,10 @@ if __name__ == "__main__":
             for step in range(BATCH_SIZE):
                 print("step:", step)
                 # 4. 预测结果并记录
-                image=yolov3.predict_with_loss(
+                image = yolov3.predict_with_loss(
                     tensord_images[step],
                     tensord_boxes_list[step],
                 )
                 image.show()
-                exit(-1)
+
+            exit(-1)

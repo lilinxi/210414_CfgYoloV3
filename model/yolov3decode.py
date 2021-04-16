@@ -239,24 +239,24 @@ def non_max_suppression(
     return predict_bbox_attrs_after_nms
 
 
-def decode_tensord_target(config: dict, tensord_target: torch.Tensor) -> numpy.ndarray:
-    """
-    解析真值框
-
-    :param config:
-    :param tensord_target: box_num * (norm_x, norm_y, norm_w, norm_h, label)
-    :return: box_num * (xmin, ymin, xmax, ymax, label)
-    """
-    truth_target = tensord_target.numpy()
-    truth_target[:, 0] *= config["image_width"]
-    truth_target[:, 1] *= config["image_height"]
-    truth_target[:, 2] *= config["image_width"]
-    truth_target[:, 3] *= config["image_height"]
-
-    truth_boxes = truth_target.copy()
-    truth_boxes[:, 0] = numpy.around(truth_target[:, 0] - truth_target[:, 2] / 2)
-    truth_boxes[:, 1] = numpy.around(truth_target[:, 1] - truth_target[:, 3] / 2)
-    truth_boxes[:, 2] = numpy.around(truth_target[:, 0] + truth_target[:, 2] / 2)
-    truth_boxes[:, 3] = numpy.around(truth_target[:, 1] + truth_target[:, 3] / 2)
-
-    return truth_boxes.astype(numpy.int)
+# def decode_tensord_target(config: dict, tensord_target: torch.Tensor) -> numpy.ndarray:
+#     """
+#     解析真值框
+#
+#     :param config:
+#     :param tensord_target: box_num * (norm_x, norm_y, norm_w, norm_h, label)
+#     :return: box_num * (xmin, ymin, xmax, ymax, label)
+#     """
+#     truth_target = tensord_target.numpy()
+#     truth_target[:, 0] *= config["image_width"]
+#     truth_target[:, 1] *= config["image_height"]
+#     truth_target[:, 2] *= config["image_width"]
+#     truth_target[:, 3] *= config["image_height"]
+#
+#     truth_boxes = truth_target.copy()
+#     truth_boxes[:, 0] = numpy.around(truth_target[:, 0] - truth_target[:, 2] / 2)
+#     truth_boxes[:, 1] = numpy.around(truth_target[:, 1] - truth_target[:, 3] / 2)
+#     truth_boxes[:, 2] = numpy.around(truth_target[:, 0] + truth_target[:, 2] / 2)
+#     truth_boxes[:, 3] = numpy.around(truth_target[:, 1] + truth_target[:, 3] / 2)
+#
+#     return truth_boxes.astype(numpy.int)

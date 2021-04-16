@@ -5,6 +5,36 @@ import numpy
 import torch
 
 
+def jaccard(_box_a, _box_b):
+    # 计算真实框的左上角和右下角
+    b1_x1, b1_x2 = _box_a[:, 0] - _box_a[:, 2] / 2, _box_a[:, 0] + _box_a[:, 2] / 2
+    b1_y1, b1_y2 = _box_a[:, 1] - _box_a[:, 3] / 2, _box_a[:, 1] + _box_a[:, 3] / 2
+    # 计算先验框的左上角和右下角
+    b2_x1, b2_x2 = _box_b[:, 0] - _box_b[:, 2] / 2, _box_b[:, 0] + _box_b[:, 2] / 2
+    b2_y1, b2_y2 = _box_b[:, 1] - _box_b[:, 3] / 2, _box_b[:, 1] + _box_b[:, 3] / 2
+    box_a = torch.zeros_like(_box_a)
+    box_b = torch.zeros_like(_box_b)
+    box_a[:, 0], box_a[:, 1], box_a[:, 2], box_a[:, 3] = b1_x1, b1_y1, b1_x2, b1_y2
+    box_b[:, 0], box_b[:, 1], box_b[:, 2], box_b[:, 3] = b2_x1, b2_y1, b2_x2, b2_y2
+    A = box_a.size(0)
+    B = box_b.size(0)
+    max_xy = torch.min(box_a[:, 2:].unsqueeze(1).expand(A, B, 2),
+                       box_b[:, 2:].unsqueeze(0).expand(A, B, 2))
+    min_xy = torch.max(box_a[:, :2].unsqueeze(1).expand(A, B, 2),
+                       box_b[:, :2].unsqueeze(0).expand(A, B, 2))
+    inter = torch.clamp((max_xy - min_xy), min=0)
+
+    inter = inter[:, :, 0] * inter[:, :, 1]
+    # 计算先验框和真实框各自的面积
+    area_a = ((box_a[:, 2] - box_a[:, 0]) *
+              (box_a[:, 3] - box_a[:, 1])).unsqueeze(1).expand_as(inter)  # [A,B]
+    area_b = ((box_b[:, 2] - box_b[:, 0]) *
+              (box_b[:, 3] - box_b[:, 1])).unsqueeze(0).expand_as(inter)  # [A,B]
+    # 求IOU
+    union = area_a + area_b - inter
+    return inter / union  # [A,B]
+
+
 def intersect(box_a, box_b):
     """ We resize both tensors to [A,B,2] without new malloc:
     [A,2] -> [A,1,2] -> [A,B,2]
@@ -76,85 +106,61 @@ class YoloV3Loss(torch.nn.Module):
         self.classes = config["classes"]
         self.bbox_attrs = 4 + 1 + self.classes
 
-        self.ignore_threshold = 0.5  # iou 忽略的阈值
+        self.ignore_threshold = 0.3  # iou 忽略的阈值
 
         self.cuda = config["cuda"]
 
-    # def pyramid_target(self, tensord_target_list: List[torch.Tensor]):
-    #     pyramid_target_list_13 = []
-    #     pyramid_target_list_26 = []
-    #     pyramid_target_list_52 = []
-    #
-    #     for tensord_target in tensord_target_list:
-    #         tensord_target_13 = []
-    #         tensord_target_26 = []
-    #         tensord_target_52 = []
-    #
-    #         target_box = tensord_target[:, :4].clone().detach()
-    #         target_box[:, 0] = 0
-    #         target_box[:, 1] = 0
-    #         normd_anch_ious = jaccard_tensor(target_box, self.normd_anchors_box)
-    #         max_anch_ious_index = torch.argmax(normd_anch_ious, dim=-1)
-    #
-    #         for box_index, anch_index in enumerate(max_anch_ious_index):
-    #             if anch_index in [0, 1, 2]:
-    #                 tensord_target_13.append(tensord_target[box_index].numpy())
-    #             elif anch_index in [3, 4, 5]:
-    #                 tensord_target_26.append(tensord_target[box_index].numpy())
-    #             elif anch_index in [6, 7, 8]:
-    #                 tensord_target_52.append(tensord_target[box_index].numpy())
-    #             else:
-    #                 raise Exception("unexpected error")
-    #
-    #         pyramid_target_list_13.append(torch.as_tensor(tensord_target_13))
-    #         pyramid_target_list_26.append(torch.as_tensor(tensord_target_26))
-    #         pyramid_target_list_52.append(torch.as_tensor(tensord_target_52))
-    #
-    #     return pyramid_target_list_13, pyramid_target_list_26, pyramid_target_list_52
-
-    def decode_pyramid_target(self,
-                              pyramid_target_list: List[torch.Tensor],
-                              pyramid_normd_anchors: numpy.ndarray,
-                              pyramid_features: int
-                              ) -> (
+    def decode_pyramid_boxes(self,
+                             pyramid_boxes_list: List[torch.Tensor],
+                             pyramid_features: int,
+                             predict_feature: torch.Tensor
+                             ) -> (
             torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor,
             torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor,
             torch.Tensor, torch.Tensor
     ):
+        """
+        将真值框分成三个特征层，并变换成 tensor 的格式
+        """
         assert pyramid_features in [13, 26, 52]
 
         if pyramid_features == 13:
             pyramid_anch_index_list = [0, 1, 2]
+            cur_anchors = self.normd_anchors[0:3]
         elif pyramid_features == 26:
             pyramid_anch_index_list = [3, 4, 5]
+            cur_anchors = self.normd_anchors[3:6]
         elif pyramid_features == 52:
             pyramid_anch_index_list = [6, 7, 8]
+            cur_anchors = self.normd_anchors[6:9]
         else:
             raise Exception("unexpected error")
 
-        batch_size = len(pyramid_target_list)
+        batch_size = len(pyramid_boxes_list)
 
-        target_x = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
-        target_y = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
-        target_w = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
-        target_h = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        # 将真值框变换为如下的 tensor 格式
+        boxes_x = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_y = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_w = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_h = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
 
-        target_loss_weight_xw = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
-        target_loss_weight_yh = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_loss_weight_xw = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_loss_weight_yh = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
 
-        target_obj_conf = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
-        target_class_conf_list = torch.zeros(batch_size, 3, pyramid_features, pyramid_features,
-                                             self.classes)
+        boxes_obj_conf = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_class_conf_list = torch.zeros(batch_size, 3, pyramid_features, pyramid_features,
+                                            self.classes)
 
-        target_obj_mask = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
-        target_noobj_mask = torch.ones(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_obj_mask = torch.zeros(batch_size, 3, pyramid_features, pyramid_features)
+        boxes_noobj_mask = torch.ones(batch_size, 3, pyramid_features, pyramid_features)
 
         # 遍历这一个批次所有的图片
-        for bs_i, pyramid_target in enumerate(pyramid_target_list):
-            if pyramid_target.shape[0] == 0:
+        for bs_i, pyramid_boxes in enumerate(pyramid_boxes_list):
+            if pyramid_boxes.shape[0] == 0:
                 continue
 
-            truth_feature_box = pyramid_target[:, 0:4] * pyramid_features
+            # 将真值框的 xy 变换为相对于网格的偏移量，顺便获取真值框在 tensor 表示中的网格索引（truth_grid_x，truth_grid_y——
+            truth_feature_box = pyramid_boxes[:, 0:4] * pyramid_features
 
             truth_grid_x = torch.floor(truth_feature_box[:, 0]).int()
             truth_grid_y = torch.floor(truth_feature_box[:, 1]).int()
@@ -162,10 +168,11 @@ class YoloV3Loss(torch.nn.Module):
             truth_x = truth_feature_box[:, 0] - truth_grid_x
             truth_y = truth_feature_box[:, 1] - truth_grid_y
 
-            target_box = pyramid_target[:, :4].clone().detach()
-            target_box[:, 0] = 0
-            target_box[:, 1] = 0
-            normd_anch_ious = jaccard_tensor(target_box, self.normd_anchors_box)
+            # 和真值框 iou 最大的 anchor 索引，确定真值框所在的特征层
+            truth_box = pyramid_boxes[:, :4].clone().detach()
+            truth_box[:, 0] = 0
+            truth_box[:, 1] = 0
+            normd_anch_ious = jaccard_tensor(truth_box, self.normd_anchors_box)
             max_anch_ious_index = torch.argmax(normd_anch_ious, dim=-1)
 
             for box_i, anch_i in enumerate(max_anch_ious_index):
@@ -173,56 +180,142 @@ class YoloV3Loss(torch.nn.Module):
                     continue
                 pyramid_anch_i = anch_i % 3
 
-                truth_w_box = torch.log(pyramid_target[box_i][2] / self.normd_anchors[anch_i][0])
-                truth_h_box = torch.log(pyramid_target[box_i][3] / self.normd_anchors[anch_i][1])
+                boxes_x[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_x[box_i]
+                boxes_y[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_y[box_i]
 
-                target_x[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_x[box_i]
-                target_y[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_y[box_i]
+                truth_w_box = torch.log(pyramid_boxes[box_i][2] / self.normd_anchors[anch_i][0])
+                truth_h_box = torch.log(pyramid_boxes[box_i][3] / self.normd_anchors[anch_i][1])
+                boxes_w[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_w_box
+                boxes_h[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_h_box
 
-                target_w[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_w_box
-                target_h[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = truth_h_box
+                boxes_loss_weight_xw[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = \
+                    pyramid_boxes[box_i][2]
+                boxes_loss_weight_yh[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = \
+                    pyramid_boxes[box_i][3]
 
-                target_loss_weight_xw[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = \
-                    pyramid_target[box_i][2]
-                target_loss_weight_yh[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = \
-                    pyramid_target[box_i][3]
+                boxes_obj_conf[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = 1
+                boxes_class_conf_list[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i],
+                                      pyramid_boxes[box_i][4].int()] = 1
 
-                target_obj_conf[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = 1
-                target_class_conf_list[
-                    bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i], pyramid_target[box_i][4].int()] = 1
-
-                target_obj_mask[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = 1
-                target_noobj_mask[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = 0
+                boxes_obj_mask[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = 1
+                boxes_noobj_mask[bs_i, pyramid_anch_i, truth_grid_y[box_i], truth_grid_x[box_i]] = 0  # 可以确定一定有物体
 
         # print("loss in cuda") if self.cuda else print("loss not in cuda")
 
+        # ----------------------------------------------------------------------------------------------------- #
+        # 一些预测框和真值框 iou 较大的地方，有可能有物体
+        cur_anchors_num = 3
+        predict_feature_height = pyramid_features
+        predict_feature_width = pyramid_features
+        # 4. 将预测网络输出的特征层进行维度变换，将预测框个数与预测属性分开，并将预测属性转置为末位维度的属性，便于提取和解析
+        predict_feature = predict_feature.contiguous().view(
+            batch_size,
+            cur_anchors_num,
+            self.bbox_attrs,
+            predict_feature_height,
+            predict_feature_width,
+        ).permute(0, 1, 3, 4, 2).contiguous()
+
+        # 5. 分隔预测属性
+        predict_x = predict_feature[..., 0]
+        predict_y = predict_feature[..., 1]
+        predict_w = predict_feature[..., 2]
+        predict_h = predict_feature[..., 3]
+
+        # 6. 解析 xy
+        norm_predict_x = torch.sigmoid(predict_x)
+        norm_predict_y = torch.sigmoid(predict_y)
+        # 6.1 构造 grid tensor
+        grid_x = torch.linspace(0, predict_feature_width - 1, predict_feature_width) \
+            .repeat(predict_feature_height, 1) \
+            .repeat(batch_size * cur_anchors_num, 1, 1) \
+            .view(predict_x.shape)
+        grid_y = torch.linspace(0, predict_feature_height - 1, predict_feature_height) \
+            .repeat(predict_feature_width, 1) \
+            .t() \
+            .repeat(batch_size * cur_anchors_num, 1, 1) \
+            .view(predict_y.shape)
         if self.cuda:
-            return target_x.cuda(), \
-                   target_y.cuda(), \
-                   target_w.cuda(), \
-                   target_h.cuda(), \
-                   target_loss_weight_xw.cuda(), \
-                   target_loss_weight_yh.cuda(), \
-                   target_obj_conf.cuda(), \
-                   target_class_conf_list.cuda(), \
-                   target_obj_mask.cuda(), \
-                   target_noobj_mask.cuda()
+            grid_x = grid_x.cuda()
+            grid_y = grid_y.cuda()
+        # 6.2 叠加 grid tensor
+        grid_predict_x = norm_predict_x + grid_x
+        grid_predict_y = norm_predict_y + grid_y
+        # 6.3 归一化 x，y
+        normd_predict_x = grid_predict_x / predict_feature_width
+        normd_predict_y = grid_predict_y / predict_feature_height
 
-        return target_x, \
-               target_y, \
-               target_w, \
-               target_h, \
-               target_loss_weight_xw, \
-               target_loss_weight_yh, \
-               target_obj_conf, \
-               target_class_conf_list, \
-               target_obj_mask, \
-               target_noobj_mask
+        # 7. 解析 wh
+        # 7.1 构造 anchor tensor
+        anchor_width = torch.Tensor(cur_anchors)[:, 0].unsqueeze(dim=1)
+        anchor_height = torch.Tensor(cur_anchors)[:, 1].unsqueeze(dim=1)
+        grid_anchor_width = anchor_width.repeat(batch_size, 1). \
+            repeat(1, 1, predict_feature_height * predict_feature_width). \
+            view(predict_w.shape)
+        grid_anchor_height = anchor_height.repeat(batch_size, 1). \
+            repeat(1, 1, predict_feature_height * predict_feature_width). \
+            view(predict_h.shape)
+        if self.cuda:
+            grid_anchor_width = grid_anchor_width.cuda()
+            grid_anchor_height = grid_anchor_height.cuda()
+        # 7.2 乘以 anchor tensor
+        anchord_predict_width = torch.exp(predict_w) * grid_anchor_width
+        anchord_predict_height = torch.exp(predict_h) * grid_anchor_height
+        # 6.3 归一化 w, h
+        normd_predict_w = anchord_predict_width / predict_feature_width
+        normd_predict_h = anchord_predict_height / predict_feature_height
 
-    def compute_loss(self, predict_feature: torch.Tensor, decoded_target) -> (
+        normd_predict_boxes = torch.cat(
+            [
+                normd_predict_x.unsqueeze(dim=4),
+                normd_predict_y.unsqueeze(dim=4),
+                normd_predict_w.unsqueeze(dim=4),
+                normd_predict_h.unsqueeze(dim=4),
+            ], dim=-1
+        )
+
+        for bs_i, pyramid_boxes in enumerate(pyramid_boxes_list):
+            if self.cuda:
+                pyramid_boxes = pyramid_boxes.cuda()
+            bs_normd_predict_boxes = normd_predict_boxes[bs_i].view(-1, 4)
+            predict_truth_ious = jaccard(pyramid_boxes[..., :4], bs_normd_predict_boxes)
+            predict_truth_ious_max, _ = torch.max(predict_truth_ious, dim=0)
+            predict_truth_ious_max = predict_truth_ious_max.view(normd_predict_boxes[bs_i].size()[:3])
+            # a = predict_truth_ious_max > self.ignore_threshold
+            # aa = torch.unique(a)
+            # print(aa.size())
+            boxes_noobj_mask[bs_i][predict_truth_ious_max > self.ignore_threshold] = 0
+
+        if self.cuda:
+            return boxes_x.cuda(), \
+                   boxes_y.cuda(), \
+                   boxes_w.cuda(), \
+                   boxes_h.cuda(), \
+                   boxes_loss_weight_xw.cuda(), \
+                   boxes_loss_weight_yh.cuda(), \
+                   boxes_obj_conf.cuda(), \
+                   boxes_class_conf_list.cuda(), \
+                   boxes_obj_mask.cuda(), \
+                   boxes_noobj_mask.cuda()
+
+        return boxes_x, \
+               boxes_y, \
+               boxes_w, \
+               boxes_h, \
+               boxes_loss_weight_xw, \
+               boxes_loss_weight_yh, \
+               boxes_obj_conf, \
+               boxes_class_conf_list, \
+               boxes_obj_mask, \
+               boxes_noobj_mask
+
+    def compute_loss(self, predict_feature: torch.Tensor, decoded_boxes) -> (
             torch.Tensor, torch.Tensor):
-        (target_x, target_y, target_w, target_h, target_loss_weight_xw, target_loss_weight_yh, target_obj_conf,
-         target_class_conf_list, target_obj_mask, target_noobj_mask) = decoded_target
+        """
+        逐个特征层计算损失
+        """
+        (boxes_x, boxes_y, boxes_w, boxes_h, boxes_loss_weight_xw, boxes_loss_weight_yh, boxes_obj_conf,
+         boxes_class_conf_list, boxes_obj_mask, boxes_noobj_mask) = decoded_boxes
 
         predict_feature = predict_feature.view(
             predict_feature.shape[0],
@@ -239,21 +332,21 @@ class YoloV3Loss(torch.nn.Module):
         predict_obj_conf = torch.sigmoid(predict_feature[..., 4])
         predict_class_conf_list = torch.sigmoid(predict_feature[..., 5:])
 
-        target_loss_scale = 2 - target_loss_weight_xw * target_loss_weight_yh
+        boxes_loss_scale = 2 - boxes_loss_weight_xw * boxes_loss_weight_yh
 
-        loss_x = torch.sum(torch.nn.BCELoss()(predict_x, target_x) * target_loss_scale * target_obj_mask)
-        loss_y = torch.sum(torch.nn.BCELoss()(predict_y, target_y) * target_loss_scale * target_obj_mask)
+        loss_x = torch.sum(torch.nn.BCELoss()(predict_x, boxes_x) * boxes_loss_scale * boxes_obj_mask)
+        loss_y = torch.sum(torch.nn.BCELoss()(predict_y, boxes_y) * boxes_loss_scale * boxes_obj_mask)
 
-        loss_w = torch.sum(torch.nn.MSELoss()(predict_w, target_w) * 0.5 * target_loss_scale * target_obj_mask)
-        loss_h = torch.sum(torch.nn.MSELoss()(predict_h, target_h) * 0.5 * target_loss_scale * target_obj_mask)
+        loss_w = torch.sum(torch.nn.MSELoss()(predict_w, boxes_w) * 0.5 * boxes_loss_scale * boxes_obj_mask)
+        loss_h = torch.sum(torch.nn.MSELoss()(predict_h, boxes_h) * 0.5 * boxes_loss_scale * boxes_obj_mask)
 
         loss_conf = self.lambda_obj * torch.sum(
-            torch.nn.BCELoss()(predict_obj_conf, target_obj_mask) * target_obj_mask) + \
+            torch.nn.BCELoss()(predict_obj_conf, boxes_obj_mask) * boxes_obj_mask) + \
                     self.lambda_noobj * torch.sum(
-            torch.nn.BCELoss()(predict_obj_conf, target_obj_mask) * target_noobj_mask)
+            torch.nn.BCELoss()(predict_obj_conf, boxes_obj_mask) * boxes_noobj_mask)
 
-        loss_class = torch.sum(torch.nn.BCELoss()(predict_class_conf_list[target_obj_mask == 1],
-                                                  target_class_conf_list[target_obj_mask == 1]))
+        loss_class = torch.sum(torch.nn.BCELoss()(predict_class_conf_list[boxes_obj_mask == 1],
+                                                  boxes_class_conf_list[boxes_obj_mask == 1]))
 
         # print("\n---------------------------------------")
         # print(loss_x, loss_y)
@@ -265,22 +358,17 @@ class YoloV3Loss(torch.nn.Module):
                loss_w * self.lambda_wh + loss_h * self.lambda_wh + \
                loss_conf * self.lambda_conf + loss_class * self.lambda_class
 
-        return loss, torch.sum(target_obj_mask)
+        return loss, torch.sum(boxes_obj_mask)
 
     def forward(self, predict_feature_list,
-                tensord_target_list: List[torch.Tensor]) -> torch.Tensor:
-        # pyramid_target_list_13, pyramid_target_list_26, pyramid_target_list_52 = \
-        #     self.pyramid_target(tensord_target_list)
-        # pyramid_normd_anchors_13, pyramid_normd_anchors_26, pyramid_normd_anchors_52 = \
-        #     self.normd_anchors[0:3], self.normd_anchors[3, 6], self.normd_anchors[6, 9]
+                tensord_boxes_list: List[torch.Tensor]) -> torch.Tensor:
+        boxes_13 = self.decode_pyramid_boxes(tensord_boxes_list, 13, predict_feature_list[0])
+        boxes_26 = self.decode_pyramid_boxes(tensord_boxes_list, 26, predict_feature_list[1])
+        boxes_52 = self.decode_pyramid_boxes(tensord_boxes_list, 52, predict_feature_list[2])
 
-        target_13 = self.decode_pyramid_target(tensord_target_list, None, 13)
-        target_26 = self.decode_pyramid_target(tensord_target_list, None, 26)
-        target_52 = self.decode_pyramid_target(tensord_target_list, None, 52)
-
-        loss_13, loss_13_num = self.compute_loss(predict_feature_list[0], target_13)
-        loss_26, loss_26_num = self.compute_loss(predict_feature_list[1], target_26)
-        loss_52, loss_52_num = self.compute_loss(predict_feature_list[2], target_52)
+        loss_13, loss_13_num = self.compute_loss(predict_feature_list[0], boxes_13)
+        loss_26, loss_26_num = self.compute_loss(predict_feature_list[1], boxes_26)
+        loss_52, loss_52_num = self.compute_loss(predict_feature_list[2], boxes_52)
 
         loss_list = []
 

@@ -2,6 +2,8 @@ import os
 
 import tqdm
 
+import numpy
+
 import torch
 import torch.optim
 import torch.utils.data.dataloader
@@ -158,7 +160,11 @@ def load_pretrained_weights(net: torch.nn.Module, weights_path: str, cuda: bool)
 
 
 if __name__ == "__main__":
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    torch.cuda.set_device(1)
+
     # 0. 确保每次的伪随机数相同以便于问题的复现
+    numpy.random.seed(0)
     torch.manual_seed(1)
 
     # 1. 训练参数
@@ -167,8 +173,11 @@ if __name__ == "__main__":
     print("config:\n", Config)
 
     # 提示 OOM 或者显存不足请调小 Batch_size
-    Train_Batch_Size = 64
-    Eval_Batch_Size = 16
+    Freeze_Train_Batch_Size = 64
+    Freeze_Eval_Batch_Size = 16
+
+    Unfreeze_Train_Batch_Size = 16
+    Unfreeze_Eval_Batch_Size = 16
 
     Init_Epoch = 0  # 起始世代
     Freeze_Epoch = 50  # 冻结训练的世代
@@ -180,7 +189,7 @@ if __name__ == "__main__":
     Num_Workers = 12
     Suffle = True
 
-    Test_Name = "Voc_Test3"
+    Test_Name = "Voc_Test4"
 
     # 2. 创建 yolo 模型，训练前一定要修改 Config 里面的 classes 参数，训练的是 YoloNet 不是 Yolo
     yolov3_net = model.yolov3net.YoloV3Net(Config)
@@ -200,21 +209,37 @@ if __name__ == "__main__":
     yolov3_loss = model.yolov3loss.YoloV3Loss(Config)
 
     # 6. 加载训练数据集和测试数据集
-    train_data_loader = dataset.voc_dataset.VOCDataset.TrainDataloader(
+    freeze_train_data_loader = dataset.voc_dataset.VOCDataset.TrainDataloader(
         config=Config,
-        batch_size=Train_Batch_Size,
+        batch_size=Freeze_Train_Batch_Size,
         shuffle=Suffle,
         num_workers=Num_Workers,
     )
-    train_batch_num = len(train_data_loader)
+    freeze_train_batch_num = len(freeze_train_data_loader)
 
-    validate_data_loader = dataset.voc_dataset.VOCDataset.EvalAsTrainDataloader(
+    freeze_validate_data_loader = dataset.voc_dataset.VOCDataset.EvalAsTrainDataloader(
         config=Config,
-        batch_size=Eval_Batch_Size,
+        batch_size=Freeze_Eval_Batch_Size,
         shuffle=Suffle,
         num_workers=Num_Workers,
     )
-    validate_batch_num = len(validate_data_loader)
+    freeze_validate_batch_num = len(freeze_validate_data_loader)
+
+    unfreeze_train_data_loader = dataset.voc_dataset.VOCDataset.TrainDataloader(
+        config=Config,
+        batch_size=Unfreeze_Train_Batch_Size,
+        shuffle=Suffle,
+        num_workers=Num_Workers,
+    )
+    unfreeze_train_batch_num = len(unfreeze_train_data_loader)
+
+    unfreeze_validate_data_loader = dataset.voc_dataset.VOCDataset.EvalAsTrainDataloader(
+        config=Config,
+        batch_size=Unfreeze_Eval_Batch_Size,
+        shuffle=Suffle,
+        num_workers=Num_Workers,
+    )
+    unfreeze_validate_batch_num = len(unfreeze_validate_data_loader)
 
     # 7. 粗略训练预测头
 
@@ -234,11 +259,11 @@ if __name__ == "__main__":
             yolov3_loss,  # 损失函数
             optimizer,  # 优化器
             epoch,  # 当前 epoch
-            train_batch_num,  # 训练集批次数
-            validate_batch_num,  # 验证集批次数
+            freeze_train_batch_num,  # 训练集批次数
+            freeze_validate_batch_num,  # 验证集批次数
             Freeze_Epoch,  # 总批次
-            train_data_loader,  # 训练集
-            validate_data_loader,  # 验证集
+            freeze_train_data_loader,  # 训练集
+            freeze_validate_data_loader,  # 验证集
             Config["cuda"],
         )
         lr_scheduler.step()  # 更新步长
@@ -261,11 +286,11 @@ if __name__ == "__main__":
             yolov3_loss,  # 损失函数
             optimizer,  # 优化器
             epoch,  # 当前 epoch
-            train_batch_num,  # 训练集批次数
-            validate_batch_num,  # 验证集批次数
+            unfreeze_train_batch_num,  # 训练集批次数
+            unfreeze_validate_batch_num,  # 验证集批次数
             Unfreeze_Epoch,  # 总批次
-            train_data_loader,  # 训练集
-            validate_data_loader,  # 验证集
+            unfreeze_train_data_loader,  # 训练集
+            unfreeze_validate_data_loader,  # 验证集
             Config["cuda"],
         )
         lr_scheduler.step()  # 更新步长

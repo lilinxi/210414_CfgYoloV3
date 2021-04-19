@@ -113,7 +113,8 @@ class YoloV3Loss(torch.nn.Module):
     def decode_pyramid_boxes(self,
                              pyramid_boxes_list: List[torch.Tensor],
                              pyramid_features: int,
-                             predict_feature: torch.Tensor
+                             predict_feature: torch.Tensor,
+                             ignore_on: bool
                              ) -> (
             torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor,
             torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor,
@@ -202,89 +203,90 @@ class YoloV3Loss(torch.nn.Module):
 
         # print("loss in cuda") if self.cuda else print("loss not in cuda")
 
-        # ----------------------------------------------------------------------------------------------------- #
-        # 一些预测框和真值框 iou 较大的地方，有可能有物体
-        cur_anchors_num = 3
-        predict_feature_height = pyramid_features
-        predict_feature_width = pyramid_features
-        # 4. 将预测网络输出的特征层进行维度变换，将预测框个数与预测属性分开，并将预测属性转置为末位维度的属性，便于提取和解析
-        predict_feature = predict_feature.contiguous().view(
-            batch_size,
-            cur_anchors_num,
-            self.bbox_attrs,
-            predict_feature_height,
-            predict_feature_width,
-        ).permute(0, 1, 3, 4, 2).contiguous()
+        if ignore_on:
+            # ----------------------------------------------------------------------------------------------------- #
+            # 一些预测框和真值框 iou 较大的地方，有可能有物体
+            cur_anchors_num = 3
+            predict_feature_height = pyramid_features
+            predict_feature_width = pyramid_features
+            # 4. 将预测网络输出的特征层进行维度变换，将预测框个数与预测属性分开，并将预测属性转置为末位维度的属性，便于提取和解析
+            predict_feature = predict_feature.contiguous().view(
+                batch_size,
+                cur_anchors_num,
+                self.bbox_attrs,
+                predict_feature_height,
+                predict_feature_width,
+            ).permute(0, 1, 3, 4, 2).contiguous()
 
-        # 5. 分隔预测属性
-        predict_x = predict_feature[..., 0]
-        predict_y = predict_feature[..., 1]
-        predict_w = predict_feature[..., 2]
-        predict_h = predict_feature[..., 3]
+            # 5. 分隔预测属性
+            predict_x = predict_feature[..., 0]
+            predict_y = predict_feature[..., 1]
+            predict_w = predict_feature[..., 2]
+            predict_h = predict_feature[..., 3]
 
-        # 6. 解析 xy
-        norm_predict_x = torch.sigmoid(predict_x)
-        norm_predict_y = torch.sigmoid(predict_y)
-        # 6.1 构造 grid tensor
-        grid_x = torch.linspace(0, predict_feature_width - 1, predict_feature_width) \
-            .repeat(predict_feature_height, 1) \
-            .repeat(batch_size * cur_anchors_num, 1, 1) \
-            .view(predict_x.shape)
-        grid_y = torch.linspace(0, predict_feature_height - 1, predict_feature_height) \
-            .repeat(predict_feature_width, 1) \
-            .t() \
-            .repeat(batch_size * cur_anchors_num, 1, 1) \
-            .view(predict_y.shape)
-        if self.cuda:
-            grid_x = grid_x.cuda()
-            grid_y = grid_y.cuda()
-        # 6.2 叠加 grid tensor
-        grid_predict_x = norm_predict_x + grid_x
-        grid_predict_y = norm_predict_y + grid_y
-        # 6.3 归一化 x，y
-        normd_predict_x = grid_predict_x / predict_feature_width
-        normd_predict_y = grid_predict_y / predict_feature_height
-
-        # 7. 解析 wh
-        # 7.1 构造 anchor tensor
-        anchor_width = torch.Tensor(cur_anchors)[:, 0].unsqueeze(dim=1)
-        anchor_height = torch.Tensor(cur_anchors)[:, 1].unsqueeze(dim=1)
-        grid_anchor_width = anchor_width.repeat(batch_size, 1). \
-            repeat(1, 1, predict_feature_height * predict_feature_width). \
-            view(predict_w.shape)
-        grid_anchor_height = anchor_height.repeat(batch_size, 1). \
-            repeat(1, 1, predict_feature_height * predict_feature_width). \
-            view(predict_h.shape)
-        if self.cuda:
-            grid_anchor_width = grid_anchor_width.cuda()
-            grid_anchor_height = grid_anchor_height.cuda()
-        # 7.2 乘以 anchor tensor
-        anchord_predict_width = torch.exp(predict_w) * grid_anchor_width
-        anchord_predict_height = torch.exp(predict_h) * grid_anchor_height
-        # 6.3 归一化 w, h
-        normd_predict_w = anchord_predict_width / predict_feature_width
-        normd_predict_h = anchord_predict_height / predict_feature_height
-
-        normd_predict_boxes = torch.cat(
-            [
-                normd_predict_x.unsqueeze(dim=4),
-                normd_predict_y.unsqueeze(dim=4),
-                normd_predict_w.unsqueeze(dim=4),
-                normd_predict_h.unsqueeze(dim=4),
-            ], dim=-1
-        )
-
-        for bs_i, pyramid_boxes in enumerate(pyramid_boxes_list):
+            # 6. 解析 xy
+            norm_predict_x = torch.sigmoid(predict_x)
+            norm_predict_y = torch.sigmoid(predict_y)
+            # 6.1 构造 grid tensor
+            grid_x = torch.linspace(0, predict_feature_width - 1, predict_feature_width) \
+                .repeat(predict_feature_height, 1) \
+                .repeat(batch_size * cur_anchors_num, 1, 1) \
+                .view(predict_x.shape)
+            grid_y = torch.linspace(0, predict_feature_height - 1, predict_feature_height) \
+                .repeat(predict_feature_width, 1) \
+                .t() \
+                .repeat(batch_size * cur_anchors_num, 1, 1) \
+                .view(predict_y.shape)
             if self.cuda:
-                pyramid_boxes = pyramid_boxes.cuda()
-            bs_normd_predict_boxes = normd_predict_boxes[bs_i].view(-1, 4)
-            predict_truth_ious = jaccard(pyramid_boxes[..., :4], bs_normd_predict_boxes)
-            predict_truth_ious_max, _ = torch.max(predict_truth_ious, dim=0)
-            predict_truth_ious_max = predict_truth_ious_max.view(normd_predict_boxes[bs_i].size()[:3])
-            # a = predict_truth_ious_max > self.ignore_threshold
-            # aa = torch.unique(a)
-            # print(aa.size())
-            boxes_noobj_mask[bs_i][predict_truth_ious_max > self.ignore_threshold] = 0
+                grid_x = grid_x.cuda()
+                grid_y = grid_y.cuda()
+            # 6.2 叠加 grid tensor
+            grid_predict_x = norm_predict_x + grid_x
+            grid_predict_y = norm_predict_y + grid_y
+            # 6.3 归一化 x，y
+            normd_predict_x = grid_predict_x / predict_feature_width
+            normd_predict_y = grid_predict_y / predict_feature_height
+
+            # 7. 解析 wh
+            # 7.1 构造 anchor tensor
+            anchor_width = torch.Tensor(cur_anchors)[:, 0].unsqueeze(dim=1)
+            anchor_height = torch.Tensor(cur_anchors)[:, 1].unsqueeze(dim=1)
+            grid_anchor_width = anchor_width.repeat(batch_size, 1). \
+                repeat(1, 1, predict_feature_height * predict_feature_width). \
+                view(predict_w.shape)
+            grid_anchor_height = anchor_height.repeat(batch_size, 1). \
+                repeat(1, 1, predict_feature_height * predict_feature_width). \
+                view(predict_h.shape)
+            if self.cuda:
+                grid_anchor_width = grid_anchor_width.cuda()
+                grid_anchor_height = grid_anchor_height.cuda()
+            # 7.2 乘以 anchor tensor
+            anchord_predict_width = torch.exp(predict_w) * grid_anchor_width
+            anchord_predict_height = torch.exp(predict_h) * grid_anchor_height
+            # 6.3 归一化 w, h
+            normd_predict_w = anchord_predict_width / predict_feature_width
+            normd_predict_h = anchord_predict_height / predict_feature_height
+
+            normd_predict_boxes = torch.cat(
+                [
+                    normd_predict_x.unsqueeze(dim=4),
+                    normd_predict_y.unsqueeze(dim=4),
+                    normd_predict_w.unsqueeze(dim=4),
+                    normd_predict_h.unsqueeze(dim=4),
+                ], dim=-1
+            )
+
+            for bs_i, pyramid_boxes in enumerate(pyramid_boxes_list):
+                if self.cuda:
+                    pyramid_boxes = pyramid_boxes.cuda()
+                bs_normd_predict_boxes = normd_predict_boxes[bs_i].view(-1, 4)
+                predict_truth_ious = jaccard(pyramid_boxes[..., :4], bs_normd_predict_boxes)
+                predict_truth_ious_max, _ = torch.max(predict_truth_ious, dim=0)
+                predict_truth_ious_max = predict_truth_ious_max.view(normd_predict_boxes[bs_i].size()[:3])
+                # a = predict_truth_ious_max > self.ignore_threshold
+                # aa = torch.unique(a)
+                # print(aa.size())
+                boxes_noobj_mask[bs_i][predict_truth_ious_max > self.ignore_threshold] = 0
 
         if self.cuda:
             return boxes_x.cuda(), \
@@ -362,9 +364,9 @@ class YoloV3Loss(torch.nn.Module):
 
     def forward(self, predict_feature_list,
                 tensord_boxes_list: List[torch.Tensor]) -> torch.Tensor:
-        boxes_13 = self.decode_pyramid_boxes(tensord_boxes_list, 13, predict_feature_list[0])
-        boxes_26 = self.decode_pyramid_boxes(tensord_boxes_list, 26, predict_feature_list[1])
-        boxes_52 = self.decode_pyramid_boxes(tensord_boxes_list, 52, predict_feature_list[2])
+        boxes_13 = self.decode_pyramid_boxes(tensord_boxes_list, 13, predict_feature_list[0], False)
+        boxes_26 = self.decode_pyramid_boxes(tensord_boxes_list, 26, predict_feature_list[1], False)
+        boxes_52 = self.decode_pyramid_boxes(tensord_boxes_list, 52, predict_feature_list[2], False)
 
         loss_13, loss_13_num = self.compute_loss(predict_feature_list[0], boxes_13)
         loss_26, loss_26_num = self.compute_loss(predict_feature_list[1], boxes_26)

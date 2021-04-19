@@ -1,43 +1,104 @@
 # 210414_CfgYoloV3
 
-1. Voc_Test1: 
-    - 损失权重都为 1
-    - 无 ignore 损失
-    - 无数据增强变换
-    - 训练参数：
-        - batch_size：16
-        - freeze_epoch：20
-2. Voc_Test2: 
-    - 损失权重为 1，class 损失权重为 5
-    - 无 ignore 损失
-    - 无数据增强变换
-    - 训练参数：
-        - batch_size：16
-        - freeze_epoch：20
-3. Voc_Test3: 
-    - 损失权重都为 1
-    - 无 ignore 损失
-    - 有数据增强变换
-        - 缩放变换
-        - 色域变换
-        - 翻转变换
-    - 训练参数：
-        - freeze_batch_size：64
-        - unfreeze_batch_size：16
-        - freeze_epoch：50
-4. Voc_Test3: 
-    - 损失权重都为 1
-    - 有 ignore 损失，0.3
-    - 有数据增强变换
-        - 缩放变换
-        - 色域变换
-        - 翻转变换
-    - 训练参数：
-        - freeze_batch_size：64
-        - unfreeze_batch_size：16
-        - freeze_epoch：50
+## 实验
 
-为甚了 eval 的时候 batch_size 要设置的比 train 小
+### Voc_Test1: 
+
+- 损失权重都为 1
+- 无 ignore 损失
+- 无数据增强变换
+- 训练参数：
+    - batch_size：16
+    - freeze_epoch：20
+- Voc_Test1_Epoch223-Train_Loss0.0166-Val_Loss19.6223.pth
+    
+### Voc_Test2: 
+
+- 损失权重为 1，class 损失权重为 5
+- 无 ignore 损失
+- 无数据增强变换
+- 训练参数：
+    - batch_size：16
+    - freeze_epoch：20
+- Voc_Test2Epoch83-Train_Loss0.0521-Val_Loss22.4719.pth
+    
+### Voc_Test3: 
+
+- 损失权重都为 1
+- 无 ignore 损失
+- 有数据增强变换
+    - 缩放变换
+    - 色域变换
+    - 翻转变换
+- 训练参数：
+    - freeze_batch_size：64
+    - unfreeze_batch_size：16
+    - freeze_epoch：50
+- Voc_Test3Epoch354-Train_Loss4.2421-Val_Loss4.6922.pth
+
+```shell script
+1.02% = aeroplane AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=1.06% ; Precision=45.45%
+0.00% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.21% = bird AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.01% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.00% = bottle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.28% = bus AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.18% = car AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.70% = cat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.07% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.00% = cow AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.03% = diningtable AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.69% = dog AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.17% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.68% = person AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.42% ; Precision=70.00%
+0.00% = pottedplant AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.16% = sheep AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.73% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.06% = train AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.05% = tvmonitor AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+mAP = 0.50%
+```
+
+### Voc_Test4: 
+
+- 损失权重都为 1
+- 有 ignore 损失，0.3
+- 有数据增强变换
+    - 缩放变换
+    - 色域变换
+    - 翻转变换
+- 训练参数：
+    - freeze_batch_size：64
+    - unfreeze_batch_size：16
+    - freeze_epoch：50
+- Voc_Test4Epoch259-Train_Loss4.2447-Val_Loss4.6763.pth
+
+```shell script
+0.84% = aeroplane AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=1.28% ; Precision=24.00%
+0.00% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.21% = bird AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.01% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.03% = bus AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.24% = car AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+3.22% = cat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.06% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.14% = cow AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.02% = diningtable AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.72% = dog AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.13% ; Precision=100.00%
+0.01% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.64% = person AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.34% ; Precision=80.95%
+0.00% = pottedplant AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.08% = sheep AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.53% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.02% = train AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.09% = tvmonitor AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+mAP = 0.39%
+```
+
+1. 为什么 eval 的时候 batch_size 要设置的比 train 小
+2. 学习率太低了？
+3. 数据增强是否有效？
+4. 是不是 bs 太大了导致训练陷入了鞍点
 
 ---
 

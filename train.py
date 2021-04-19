@@ -124,7 +124,7 @@ def train_one_epoch(
     # 3. 保存权重
     torch.save(
         yolov3_net.state_dict(),
-        os.path.join(os.path.join(os.getcwd(), "logs"), test_name + ret + ".pth")
+        os.path.join(os.path.join(os.getcwd(), "logs"), test_name + "_" + ret + ".pth")
     )
 
 
@@ -161,7 +161,7 @@ def load_pretrained_weights(net: torch.nn.Module, weights_path: str, cuda: bool)
 
 if __name__ == "__main__":
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-    torch.cuda.set_device(1)
+    # torch.cuda.set_device(1)
 
     # 0. 确保每次的伪随机数相同以便于问题的复现
     numpy.random.seed(0)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     print("config:\n", Config)
 
     # 提示 OOM 或者显存不足请调小 Batch_size
-    Freeze_Train_Batch_Size = 64
+    Freeze_Train_Batch_Size = 16
     Freeze_Eval_Batch_Size = 16
 
     Unfreeze_Train_Batch_Size = 16
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     Num_Workers = 12
     Suffle = True
 
-    Test_Name = "Voc_Test4"
+    Test_Name = "Voc_Test5"
 
     # 2. 创建 yolo 模型，训练前一定要修改 Config 里面的 classes 参数，训练的是 YoloNet 不是 Yolo
     yolov3_net = model.yolov3net.YoloV3Net(Config)
@@ -272,7 +272,7 @@ if __name__ == "__main__":
 
     # 8.1 优化器和学习率调整器
     optimizer = torch.optim.Adam(yolov3_net.parameters(), Unfreeze_Epoch_LR)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.97)
 
     # 8.2 解冻特征网络
     for param in yolov3_net.backbone.parameters():

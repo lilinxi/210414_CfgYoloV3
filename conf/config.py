@@ -56,12 +56,12 @@ VocConfig: dict = {
     "nms_iou_threshold": 0.3,  # 判断预测框重合的最大 iou 阈值
     "cuda": True and torch.cuda.is_available(),  # 是否使用 GPU
     # 2. 数据集专属配置
-    "dataset_root": "/Users/limengfan/Dataset/VOC/VOC2012Train",
-    # "dataset_root": "/home/lenovo/data/lmf/Dataset/voc/VOCtrainval_11-May-2012",
-    "weights_path": "/Users/limengfan/PycharmProjects/210414_CfgYoloV3/logs/"
-                    "Voc_Test4Epoch259-Train_Loss4.2447-Val_Loss4.6763.pth",  # 模型权重
-    # "weights_path": "/home/lenovo/data/lmf/210414_CfgYoloV3Sftp/logs/"
-    #                 "Voc_Test2Epoch77-Train_Loss0.0538-Val_Loss22.3093.pth",  # 模型权重
+    # "dataset_root": "/Users/limengfan/Dataset/VOC/VOC2012Train",
+    "dataset_root": "/home/lenovo/data/lmf/Dataset/voc/VOCtrainval_11-May-2012",
+    # "weights_path": "/Users/limengfan/PycharmProjects/210414_CfgYoloV3/logs/"
+    #                 "Voc_Test4Epoch259-Train_Loss4.2447-Val_Loss4.6763.pth",  # 模型权重
+    "weights_path": "/home/lenovo/data/lmf/210414_CfgYoloV3Sftp/logs/"
+                    "Voc_Test2Epoch77-Train_Loss0.0538-Val_Loss22.3093.pth",  # 模型权重
     "pretrained_weights_path": os.path.join(os.getcwd(), "outer_weights", "demo_darknet53_weights.pth"),  # 预训练模型权重
     # "pretrained_weights_path": "/home/lenovo/data/lmf/210414_CfgYoloV3Sftp/logs/"
     #                            "Voc_Test3Epoch050-Train_Loss6.6521-Val_Loss6.5707.pth",  # 预训练模型权重

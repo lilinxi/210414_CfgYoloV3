@@ -21,6 +21,30 @@
     - batch_size：16
     - freeze_epoch：20
 - Voc_Test2Epoch83-Train_Loss0.0521-Val_Loss22.4719.pth
+
+```shell script
+21.53% = aeroplane AP 	||	score_threhold=0.5 : F1=0.35 ; Recall=26.38% ; Precision=52.10%
+6.73% = bicycle AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=0.98% ; Precision=57.14%
+3.86% = bird AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.17% ; Precision=50.00%
+2.70% = boat AP 	||	score_threhold=0.5 : F1=0.03 ; Recall=1.38% ; Precision=26.92%
+6.13% = bottle AP 	||	score_threhold=0.5 : F1=0.05 ; Recall=2.40% ; Precision=66.67%
+5.03% = bus AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.63% ; Precision=66.67%
+21.89% = car AP 	||	score_threhold=0.5 : F1=0.16 ; Recall=9.07% ; Precision=58.38%
+16.97% = cat AP 	||	score_threhold=0.5 : F1=0.09 ; Recall=5.09% ; Precision=67.39%
+11.54% = chair AP 	||	score_threhold=0.5 : F1=0.08 ; Recall=3.98% ; Precision=65.17%
+1.90% = cow AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+5.70% = diningtable AP 	||	score_threhold=0.5 : F1=0.07 ; Recall=3.75% ; Precision=28.57%
+4.93% = dog AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.13% ; Precision=100.00%
+2.13% = horse AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+18.30% = motorbike AP 	||	score_threhold=0.5 : F1=0.17 ; Recall=9.60% ; Precision=70.59%
+45.79% = person AP 	||	score_threhold=0.5 : F1=0.54 ; Recall=47.52% ; Precision=62.13%
+3.00% = pottedplant AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.18% ; Precision=100.00%
+5.64% = sheep AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.59% ; Precision=37.50%
+7.64% = sofa AP 	||	score_threhold=0.5 : F1=0.06 ; Recall=3.01% ; Precision=80.00%
+4.92% = train AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.31% ; Precision=50.00%
+10.69% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.73% ; Precision=100.00%
+mAP = 10.35%
+```
     
 ### Voc_Test3: 
 
@@ -94,11 +118,41 @@ mAP = 0.50%
 0.09% = tvmonitor AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
 mAP = 0.39%
 ```
+    
+### Voc_Test5: 
 
-1. 为什么 eval 的时候 batch_size 要设置的比 train 小
-2. 学习率太低了？
-3. 数据增强是否有效？
-4. 是不是 bs 太大了导致训练陷入了鞍点
+- 损失权重都为 1
+- 无 ignore 损失
+- 有数据增强变换
+    - 缩放变换
+    - 色域变换
+    - 翻转变换
+- 训练参数：
+    - freeze_batch_size：16
+    - unfreeze_batch_size：16
+    - freeze_epoch：50
+- Voc_Test3Epoch354-Train_Loss4.2421-Val_Loss4.6922.pth
+
+### Voc_Test6: 
+
+- 损失权重都为 1
+- 无 ignore 损失
+- 有数据增强变换
+    - 缩放变换
+    - 色域变换
+    - 翻转变换
+- 训练参数：
+    - freeze_batch_size：16
+    - unfreeze_batch_size：16
+    - freeze_epoch：50
+    - lr gamma = 0.99
+- Voc_Test3Epoch354-Train_Loss4.2421-Val_Loss4.6922.pth
+
+1. 一开始的过拟合是否是通过数据增强消除的
+2. 陷入局部最优：
+    - 是不是 bs 太大了导致训练陷入了鞍点
+    - 还是学习率太小
+3. 为什么 eval 的时候 batch_size 要设置的比 train 小
 
 ---
 

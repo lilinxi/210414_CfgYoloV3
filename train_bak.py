@@ -1,6 +1,6 @@
 import numpy
 
-import torch.utils.data
+import torch.utils.data.dataloader
 
 import conf.config
 import model.yolov3net, model.yolov3loss
@@ -21,14 +21,14 @@ if __name__ == "__main__":
     print("config:\n", Config)
 
     # 提示 OOM 或者显存不足请调小 Batch_size
-    Freeze_Train_Batch_Size = 32
+    Freeze_Train_Batch_Size = 16
     Freeze_Eval_Batch_Size = 16
 
-    Unfreeze_Train_Batch_Size = 16
+    Unfreeze_Train_Batch_Size = 8
     Unfreeze_Eval_Batch_Size = 8
 
     Init_Epoch = 0  # 起始世代
-    Freeze_Epoch = 1  # 冻结训练的世代
+    Freeze_Epoch = 50  # 冻结训练的世代
     Unfreeze_Epoch = 2000  # 总训练世代
 
     Freeze_Epoch_LR = 1e-3
@@ -40,10 +40,7 @@ if __name__ == "__main__":
     Num_Workers = 12
     Suffle = True
 
-    Image_Set = "trainval"
-    Validation_Split = 0.05  # 验证集大小
-
-    Test_Name = "Voc_Test_2_1"
+    Test_Name = "Voc_Test7"
 
     # 2. 创建 yolo 模型，训练前一定要修改 Config 里面的 classes 参数，训练的是 YoloNet 不是 Yolo
     yolov3_net = model.yolov3net.YoloV3Net(Config)
@@ -63,61 +60,37 @@ if __name__ == "__main__":
     yolov3_loss = model.yolov3loss.YoloV3Loss(Config)
 
     # 6. 加载训练数据集和测试数据集
-    # 6.0 划分数据集
-    dataset_size = 11540  # voc trainval 长度
-    indices = list(range(dataset_size))
-    split = int(numpy.floor(Validation_Split * dataset_size))
-    if Suffle:
-        numpy.random.shuffle(indices)
-    train_indices, val_indices = indices[split:], indices[:split]
-    # Creating PT data samplers and loaders:
-    train_sampler = torch.utils.data.SubsetRandomSampler(train_indices)
-    valid_sampler = torch.utils.data.SubsetRandomSampler(val_indices)
-    # 6.1 冻结训练数据集
-    freeze_train_data_loader = dataset.voc_dataset.VOCDataset.Dataloader(
+    freeze_train_data_loader = dataset.voc_dataset.VOCDataset.TrainDataloader(
         config=Config,
-        image_set=Image_Set,
         batch_size=Freeze_Train_Batch_Size,
-        train=True,
-        shuffle=False,  # Suffle 和 Sampler 只能有一个，Sampler 已经 Suffle 了
+        shuffle=Suffle,
         num_workers=Num_Workers,
-        drop_last=False,
-        sampler=train_sampler,
     )
+    freeze_train_batch_num = len(freeze_train_data_loader)
 
-    freeze_validate_data_loader = dataset.voc_dataset.VOCDataset.Dataloader(
+    freeze_validate_data_loader = dataset.voc_dataset.VOCDataset.EvalAsTrainDataloader(
         config=Config,
-        image_set=Image_Set,
         batch_size=Freeze_Eval_Batch_Size,
-        train=False,
-        shuffle=False,  # Suffle 和 Sampler 只能有一个，Sampler 已经 Suffle 了
+        shuffle=Suffle,
         num_workers=Num_Workers,
-        drop_last=False,
-        sampler=valid_sampler,
     )
+    freeze_validate_batch_num = len(freeze_validate_data_loader)
 
-    # 6.2 解冻训练数据集
-    unfreeze_train_data_loader = dataset.voc_dataset.VOCDataset.Dataloader(
+    unfreeze_train_data_loader = dataset.voc_dataset.VOCDataset.TrainDataloader(
         config=Config,
-        image_set=Image_Set,
         batch_size=Unfreeze_Train_Batch_Size,
-        train=True,
-        shuffle=False,  # Suffle 和 Sampler 只能有一个，Sampler 已经 Suffle 了
+        shuffle=Suffle,
         num_workers=Num_Workers,
-        drop_last=False,
-        sampler=valid_sampler,
     )
+    unfreeze_train_batch_num = len(unfreeze_train_data_loader)
 
-    unfreeze_validate_data_loader = dataset.voc_dataset.VOCDataset.Dataloader(
+    unfreeze_validate_data_loader = dataset.voc_dataset.VOCDataset.EvalAsTrainDataloader(
         config=Config,
-        image_set=Image_Set,
         batch_size=Unfreeze_Eval_Batch_Size,
-        train=False,
-        shuffle=False,  # Suffle 和 Sampler 只能有一个，Sampler 已经 Suffle 了
+        shuffle=Suffle,
         num_workers=Num_Workers,
-        drop_last=False,
-        sampler=valid_sampler,
     )
+    unfreeze_validate_batch_num = len(unfreeze_validate_data_loader)
 
     # 7. 粗略训练预测头
 
@@ -137,8 +110,8 @@ if __name__ == "__main__":
             yolov3_loss,  # 损失函数
             optimizer,  # 优化器
             epoch,  # 当前 epoch
-            len(freeze_train_data_loader),  # 训练集批次数
-            len(freeze_validate_data_loader),  # 验证集批次数
+            freeze_train_batch_num,  # 训练集批次数
+            freeze_validate_batch_num,  # 验证集批次数
             Freeze_Epoch,  # 总批次
             freeze_train_data_loader,  # 训练集
             freeze_validate_data_loader,  # 验证集
@@ -164,8 +137,8 @@ if __name__ == "__main__":
             yolov3_loss,  # 损失函数
             optimizer,  # 优化器
             epoch,  # 当前 epoch
-            len(unfreeze_train_data_loader),  # 训练集批次数
-            len(unfreeze_validate_data_loader),  # 验证集批次数
+            unfreeze_train_batch_num,  # 训练集批次数
+            unfreeze_validate_batch_num,  # 验证集批次数
             Unfreeze_Epoch,  # 总批次
             unfreeze_train_data_loader,  # 训练集
             unfreeze_validate_data_loader,  # 验证集

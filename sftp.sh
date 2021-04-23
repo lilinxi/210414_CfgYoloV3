@@ -11,6 +11,7 @@ cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_process.sh /Users/lime
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_run.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_gpu.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train_utils.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp
 
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_pennfudan_with_eval.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp

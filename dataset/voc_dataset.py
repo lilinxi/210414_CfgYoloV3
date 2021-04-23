@@ -61,6 +61,7 @@ class VOCDataset(torch.utils.data.Dataset):
             shuffle: bool = False,
             num_workers: int = 0,
             drop_last: bool = True,
+            sampler: torch.utils.data.Sampler = None,
     ) -> torch.utils.data.DataLoader:
         voc_dataset = VOCDataset(
             config=config,
@@ -74,7 +75,8 @@ class VOCDataset(torch.utils.data.Dataset):
             shuffle=shuffle,
             num_workers=num_workers,
             collate_fn=dataset.transform.train_collate_fn if train else dataset.transform.eval_collate_fn,
-            drop_last=drop_last
+            drop_last=drop_last,
+            sampler=sampler,
         )
 
         return voc_dataloader
@@ -140,6 +142,40 @@ class VOCDataset(torch.utils.data.Dataset):
         return VOCDataset.Dataloader(
             config,
             image_set="train",
+            batch_size=batch_size,
+            train=False,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            drop_last=False,
+        )
+
+    @staticmethod
+    def TrainvalAsTrainDataloader(  # 以训练集的格式访问训练集-验证集合集
+            config: dict,
+            batch_size: int = 1,
+            shuffle: bool = False,
+            num_workers: int = 0,
+    ) -> torch.utils.data.DataLoader:
+        return VOCDataset.Dataloader(
+            config,
+            image_set="trainval",
+            batch_size=batch_size,
+            train=True,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            drop_last=False,
+        )
+
+    @staticmethod
+    def TrainvalAsEvalDataloader(  # 以验证集的格式访问训练集-验证集合集
+            config: dict,
+            batch_size: int = 1,
+            shuffle: bool = False,
+            num_workers: int = 0,
+    ) -> torch.utils.data.DataLoader:
+        return VOCDataset.Dataloader(
+            config,
+            image_set="trainval",
             batch_size=batch_size,
             train=False,
             shuffle=shuffle,

@@ -63,8 +63,9 @@ VocConfig: dict = {
     "weights_path": "/home/lenovo/data/lmf/210414_CfgYoloV3Sftp/logs/"
                     "Voc_Test2Epoch77-Train_Loss0.0538-Val_Loss22.3093.pth",  # 模型权重
     "pretrained_weights_path": os.path.join(os.getcwd(), "outer_weights", "demo_darknet53_weights.pth"),  # 预训练模型权重
+    # "pretrained_weights_path": "/Users/limengfan/PycharmProjects/210414_CfgYoloV3/logs/"
     # "pretrained_weights_path": "/home/lenovo/data/lmf/210414_CfgYoloV3Sftp/logs/"
-    #                            "Voc_Test3Epoch050-Train_Loss6.6521-Val_Loss6.5707.pth",  # 预训练模型权重
+    #                            "Voc_Test5_Epoch100-Train_Loss4.5960-Val_Loss4.7334.pth",  # 预训练模型权重
     "classes": 20,  # 分类数目
     "labels": [
         line.strip() for line in

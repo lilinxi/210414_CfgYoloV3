@@ -131,7 +131,34 @@ mAP = 0.39%
     - freeze_batch_size：16
     - unfreeze_batch_size：16
     - freeze_epoch：50
-- Voc_Test3Epoch354-Train_Loss4.2421-Val_Loss4.6922.pth
+- Epoch 100 之后 
+    - lr gamma = 1.0
+    - LR = 1e-4
+- Voc_Test7_Epoch1131-Train_Loss2.5120-Val_Loss5.4818.pth
+
+```shell script
+2.73% = aeroplane AP 	||	score_threhold=0.5 : F1=0.06 ; Recall=3.19% ; Precision=20.55%
+0.39% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.71% = bird AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.10% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.13% = bottle AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.40% ; Precision=11.54%
+7.35% = bus AP 	||	score_threhold=0.5 : F1=0.04 ; Recall=2.21% ; Precision=100.00%
+4.11% = car AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.25% ; Precision=42.86%
+7.11% = cat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.37% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.11% = cow AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.81% = diningtable AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.27% ; Precision=33.33%
+2.50% = dog AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.13% ; Precision=100.00%
+0.00% = horse AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.12% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+21.16% = person AP 	||	score_threhold=0.5 : F1=0.18 ; Recall=10.06% ; Precision=72.25%
+0.00% = pottedplant AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.73% = sheep AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.04% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.72% = train AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+5.69% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.03 ; Recall=1.70% ; Precision=87.50%
+mAP = 2.99%
+```
 
 ### Voc_Test6: 
 
@@ -145,14 +172,67 @@ mAP = 0.39%
     - freeze_batch_size：16
     - unfreeze_batch_size：16
     - freeze_epoch：50
-    - lr gamma = 0.99
-- Voc_Test3Epoch354-Train_Loss4.2421-Val_Loss4.6922.pth
+    - lr gamma = 0.97
+- Epoch 100 之后 
+    - lr gamma = 0.97
+    - LR = 1e-4
+- Voc_Test6_Epoch1132-Train_Loss2.8321-Val_Loss5.1602.pth
 
-1. 一开始的过拟合是否是通过数据增强消除的
+```shell script
+2.02% = aeroplane AP 	||	score_threhold=0.5 : F1=0.05 ; Recall=2.77% ; Precision=14.13%
+0.41% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.57% = bird AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.03% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.03% = bottle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+4.96% = bus AP 	||	score_threhold=0.5 : F1=0.04 ; Recall=1.89% ; Precision=85.71%
+3.52% = car AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.59% ; Precision=50.00%
+6.15% = cat AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.16% ; Precision=7.14%
+0.20% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.28% = diningtable AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+4.16% = dog AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.13% ; Precision=100.00%
+0.00% = horse AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.85% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+17.47% = person AP 	||	score_threhold=0.5 : F1=0.12 ; Recall=6.59% ; Precision=68.96%
+0.18% = pottedplant AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.18% ; Precision=100.00%
+0.46% = sheep AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.91% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.70% = train AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+4.28% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=0.97% ; Precision=80.00%
+mAP = 2.36%
+```
+
+### Voc_Test_2_1: 
+
+```shell script
+    Freeze_Train_Batch_Size = 32
+    Freeze_Eval_Batch_Size = 16
+
+    Unfreeze_Train_Batch_Size = 16
+    Unfreeze_Eval_Batch_Size = 8
+
+    Init_Epoch = 0  # 起始世代
+    Freeze_Epoch = 1  # 冻结训练的世代
+    Unfreeze_Epoch = 2000  # 总训练世代
+
+    Freeze_Epoch_LR = 1e-3
+    Unfreeze_Epoch_LR = 1e-4
+
+    Freeze_Epoch_Gamma = 0.96  # 0.96 ^ 50 = 0.12988
+    Unfreeze_Epoch_Gamma = 0.98  # 0.98^100 = 0.13262
+
+    Num_Workers = 12
+    Suffle = True
+
+    Image_Set = "trainval"
+    Validation_Split = 0.05  # 验证集大小
+```
+
+1. 一开始的过拟合是否是通过数据增强消除的，数据量还是太少
 2. 陷入局部最优：
     - 是不是 bs 太大了导致训练陷入了鞍点
-    - 还是学习率太小
+    - 还是学习率太小，学习率，
 3. 为什么 eval 的时候 batch_size 要设置的比 train 小
+
 
 ---
 

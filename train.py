@@ -21,11 +21,11 @@ if __name__ == "__main__":
     print("config:\n", Config)
 
     # 提示 OOM 或者显存不足请调小 Batch_size
-    Freeze_Train_Batch_Size = 32
-    Freeze_Eval_Batch_Size = 16
+    Freeze_Train_Batch_Size = 64
+    Freeze_Eval_Batch_Size = 32
 
-    Unfreeze_Train_Batch_Size = 16
-    Unfreeze_Eval_Batch_Size = 8
+    Unfreeze_Train_Batch_Size = 32
+    Unfreeze_Eval_Batch_Size = 16
 
     Init_Epoch = 0  # 起始世代
     Freeze_Epoch = 1  # 冻结训练的世代
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         config=Config,
         image_set=Image_Set,
         batch_size=Freeze_Eval_Batch_Size,
-        train=False,
+        train=True,
         shuffle=False,  # Suffle 和 Sampler 只能有一个，Sampler 已经 Suffle 了
         num_workers=Num_Workers,
         drop_last=False,
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         config=Config,
         image_set=Image_Set,
         batch_size=Unfreeze_Eval_Batch_Size,
-        train=False,
+        train=True,
         shuffle=False,  # Suffle 和 Sampler 只能有一个，Sampler 已经 Suffle 了
         num_workers=Num_Workers,
         drop_last=False,

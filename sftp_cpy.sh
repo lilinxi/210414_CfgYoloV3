@@ -4,6 +4,7 @@ rm -rf /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 
 mkdir /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/run.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/run_cpy.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/kill.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/map.sh /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 
@@ -13,6 +14,7 @@ cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/view_gpu.sh /Users/limengfa
 
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train_utils.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
+cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/train_cpy.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_pennfudan_with_eval.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy
 cp /Users/limengfan/PycharmProjects/210414_CfgYoloV3/predict_pennfudan_with_loss.py /Users/limengfan/PycharmProjects/210414_CfgYoloV3Sftp_Cpy

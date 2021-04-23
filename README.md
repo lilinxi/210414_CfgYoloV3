@@ -204,14 +204,40 @@ mAP = 2.36%
 ### Voc_Test_2_1: 
 
 ```shell script
-    Freeze_Train_Batch_Size = 32
-    Freeze_Eval_Batch_Size = 16
+    Freeze_Train_Batch_Size = 64
+    Freeze_Eval_Batch_Size = 32
 
     Unfreeze_Train_Batch_Size = 16
     Unfreeze_Eval_Batch_Size = 8
 
     Init_Epoch = 0  # 起始世代
-    Freeze_Epoch = 1  # 冻结训练的世代
+    Freeze_Epoch = 50  # 冻结训练的世代
+    Unfreeze_Epoch = 2000  # 总训练世代
+
+    Freeze_Epoch_LR = 1e-3
+    Unfreeze_Epoch_LR = 1e-4
+
+    Freeze_Epoch_Gamma = 0.96  # 0.96 ^ 50 = 0.12988
+    Unfreeze_Epoch_Gamma = 0.98  # 0.98^100 = 0.13262
+
+    Num_Workers = 12
+    Suffle = True
+
+    Image_Set = "trainval"
+    Validation_Split = 0.05  # 验证集大小
+```
+
+### Voc_Test_2_2: 
+
+```shell script
+    Freeze_Train_Batch_Size = 64
+    Freeze_Eval_Batch_Size = 32
+
+    Unfreeze_Train_Batch_Size = 8
+    Unfreeze_Eval_Batch_Size = 8
+
+    Init_Epoch = 0  # 起始世代
+    Freeze_Epoch = 50  # 冻结训练的世代
     Unfreeze_Epoch = 2000  # 总训练世代
 
     Freeze_Epoch_LR = 1e-3

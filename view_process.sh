@@ -1,3 +1,3 @@
 #! /bin/bash
 
-ps -aux | grep "train.py"
+ps -aux | grep "train"

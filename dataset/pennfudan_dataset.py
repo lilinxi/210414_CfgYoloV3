@@ -76,6 +76,7 @@ class PennFudanDataset(torch.utils.data.Dataset):
             shuffle: bool = False,
             num_workers: int = 0,
             drop_last: bool = True,
+            sampler: torch.utils.data.Sampler = None,
     ) -> torch.utils.data.DataLoader:
         pennfudan_dataset = PennFudanDataset(
             config=config,
@@ -88,7 +89,8 @@ class PennFudanDataset(torch.utils.data.Dataset):
             shuffle=shuffle,
             num_workers=num_workers,
             collate_fn=dataset.transform.train_collate_fn if train else dataset.transform.eval_collate_fn,
-            drop_last=drop_last
+            drop_last=drop_last,
+            sampler=sampler,
         )
 
         return pennfudan_dataloader
@@ -122,7 +124,7 @@ class PennFudanDataset(torch.utils.data.Dataset):
             train=False,
             shuffle=shuffle,
             num_workers=num_workers,
-            drop_last=True,
+            drop_last=False,
         )
 
 

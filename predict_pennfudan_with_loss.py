@@ -55,4 +55,4 @@ if __name__ == "__main__":
                     tensord_boxes_list[step],
                 )
                 image.show()
-                exit(-1)
+            exit(-1)

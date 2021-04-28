@@ -19,7 +19,7 @@ if __name__ == "__main__":
     Config = conf.config.PennFudanConfig
 
     # 2. 验证集
-    BATCH_SIZE = 64
+    BATCH_SIZE = 256
     pennfudan_dataloader = dataset.pennfudan_dataset.PennFudanDataset.EvalDataloader(
         config=Config,
         batch_size=BATCH_SIZE
@@ -34,6 +34,8 @@ if __name__ == "__main__":
         print("Epoch:", epoch)
         for batch_index, (tensord_images, truth_annotation_list) in enumerate(pennfudan_dataloader):
             print("batch_index:", batch_index)
+            if Config["cuda"]:
+                tensord_images = tensord_images.cuda()
             for step in range(BATCH_SIZE):
                 print("step:", step)
                 # 4. 预测结果并记录

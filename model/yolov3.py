@@ -1,5 +1,6 @@
 import os
 from typing import List
+import collections
 
 import numpy
 import PIL.Image, PIL.ImageDraw, PIL.ImageFont
@@ -42,6 +43,17 @@ class YoloV3(object):
         # 2. 加载模型权重
         device = torch.device("cuda") if self.config["cuda"] else torch.device("cpu")
         state_dict = torch.load(self.config["weights_path"], map_location=device)
+
+        # 3. 加载多卡并行 gpu 模型
+        new_state_dict = collections.OrderedDict()
+        for k, v in state_dict.items():
+            if k[:6] == "module":
+                name = k[7:]  # remove `module.`
+                new_state_dict[name] = v
+            else:
+                new_state_dict[k] = v
+        state_dict = new_state_dict
+
         self.net.load_state_dict(state_dict)
         # 3. 网络开启 eval 模式
         self.net = self.net.eval()

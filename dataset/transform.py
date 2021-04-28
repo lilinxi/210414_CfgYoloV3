@@ -34,10 +34,10 @@ def get_transforms(config: dict, train: bool) -> Compose:
     transforms = []
     if train:
         transforms.append(ReformAndExtractBoxes())
-        # transforms.append(ScaleImageAndBoxes(config=config))
-        transforms.append(RandomScaleImageAndBoxes(config=config))
-        transforms.append(RandomTransformImage())
-        transforms.append(RandomFlipImageAndBoxes(config=config))
+        transforms.append(ScaleImageAndBoxes(config=config))
+        # transforms.append(RandomScaleImageAndBoxes(config=config))
+        # transforms.append(RandomTransformImage())
+        # transforms.append(RandomFlipImageAndBoxes(config=config))
         transforms.append(NormImageAndBoxes(config=config))
     else:
         transforms.append(ScaleImage(config=config))
@@ -121,7 +121,7 @@ class RandomScaleImageAndBoxes(object):
 
         # 2. 计算图像放缩倍数，取最小的那个放缩值
         scale = min(scaled_width / raw_width, scaled_height / raw_height)
-        scale = rand(0.5, 1.0) * scale  # 0.5 ~ 1.0 scale
+        scale = rand(0.1, 1.0) * scale  # 0.1 ~ 1.0 scale
 
         # 3. 等比例放缩后的图像大小
         nw = int(raw_width * scale)
@@ -130,15 +130,19 @@ class RandomScaleImageAndBoxes(object):
         # 4. 图像等比例放缩
         scaled_image = raw_image.resize((nw, nh), PIL.Image.BICUBIC)
 
+        # 4.5 随机平移
+        dx = int(rand(0.0, scaled_width - nw))
+        dy = int(rand(0.0, scaled_height - nh))
+
         # 5. 填补图像边缘
         new_image = PIL.Image.new("RGB", (scaled_width, scaled_height), (128, 128, 128))  # 创建一张灰色底板作为返回的图像
-        new_image.paste(scaled_image, ((scaled_width - nw) // 2, (scaled_height - nh) // 2))  # 等比例放缩后的图像粘贴到底板中央
+        new_image.paste(scaled_image, (dx, dy))  # 等比例放缩后的图像粘贴到底板中央
 
         # 6. 变换 boxes
         scaled_boxes = raw_boxes.copy()
         scaled_boxes[:, 0:4] = raw_boxes[:, 0:4] * scale
-        scaled_boxes[:, 0] += (scaled_width - nw) // 2
-        scaled_boxes[:, 1] += (scaled_height - nh) // 2
+        scaled_boxes[:, 0] += dx
+        scaled_boxes[:, 1] += dy
 
         return new_image, scaled_boxes
 
@@ -149,13 +153,15 @@ class RandomTransformImage(object):
     """
 
     def __call__(self, scaled_image: PIL.Image.Image, scaled_boxes: numpy.ndarray) -> (PIL.Image.Image, numpy.ndarray):
-        new_image = torchvision.transforms.ColorJitter(
-            brightness=rand(0.5, 1.5),  # 亮度的偏移幅度
-            contrast=rand(0.5, 1.5),  # 对比度偏移幅度
-            saturation=rand(0.5, 1.5),  # 饱和度偏移幅度
-            hue=rand(0.0, 0.5),  # 色相偏移幅度
-        )(scaled_image)
-        if rand(0.0, 1.0) < 0.1:
+        new_image = scaled_image
+        if rand(0.0, 1.0) < 0.5:
+            new_image = torchvision.transforms.ColorJitter(
+                brightness=(1.0, 10.0),  # 亮度的偏移幅度
+                contrast=(1.0, 10.0),  # 对比度偏移幅度
+                saturation=(1.0, 10.0),  # 饱和度偏移幅度
+                hue=(0.2, 0.4),  # 色相偏移幅度
+            )(scaled_image)
+        if rand(0.0, 1.0) < 0.01:
             new_image = torchvision.transforms.Grayscale(num_output_channels=3)(new_image)
 
         return new_image, scaled_boxes

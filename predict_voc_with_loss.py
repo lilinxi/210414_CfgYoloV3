@@ -15,7 +15,7 @@ if __name__ == "__main__":
     Config = conf.config.VocConfig
 
     # 2. 验证集
-    BATCH_SIZE = 8
+    BATCH_SIZE = 16
     voc_dataloader = dataset.voc_dataset.VOCDataset.TrainDataloader(
         config=Config,
         batch_size=BATCH_SIZE

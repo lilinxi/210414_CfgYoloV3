@@ -217,7 +217,7 @@ mAP = 2.36%
     Freeze_Epoch_LR = 1e-3
     Unfreeze_Epoch_LR = 1e-4
 
-    Freeze_Epoch_Gamma = 0.96  # 0.96 ^ 50 = 0.12988
+    Freeze_Epoch_Gamma = 0.95 # 失误
     Unfreeze_Epoch_Gamma = 0.98  # 0.98^100 = 0.13262
 
     Num_Workers = 12
@@ -225,6 +225,31 @@ mAP = 2.36%
 
     Image_Set = "trainval"
     Validation_Split = 0.05  # 验证集大小
+```
+
+- Voc_Test_2_2_Epoch1248-Train_Loss2.5417-Val_Loss4.7416.pth
+
+```shell script
+7.98% = aeroplane AP 	||	score_threhold=0.5 : F1=0.17 ; Recall=11.49% ; Precision=35.29%
+0.92% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.78% = bird AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.17% ; Precision=100.00%
+0.15% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.18% = bottle AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.40% ; Precision=18.75%
+11.44% = bus AP 	||	score_threhold=0.5 : F1=0.14 ; Recall=7.89% ; Precision=69.44%
+5.45% = car AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.59% ; Precision=50.00%
+11.21% = cat AP 	||	score_threhold=0.5 : F1=0.06 ; Recall=2.96% ; Precision=60.00%
+1.55% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.85% = diningtable AP 	||	score_threhold=0.5 : F1=0.03 ; Recall=1.34% ; Precision=50.00%
+5.92% = dog AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.26% ; Precision=33.33%
+0.00% = horse AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.52% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+24.90% = person AP 	||	score_threhold=0.5 : F1=0.22 ; Recall=12.85% ; Precision=73.97%
+0.00% = pottedplant AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.04% = sheep AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.15% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.35% = train AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=0.92% ; Precision=21.43%
+6.23% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.03 ; Recall=1.46% ; Precision=60.00%
+mAP = 4.28%
 ```
 
 ### Voc_Test_2_2: 
@@ -243,7 +268,7 @@ mAP = 2.36%
     Freeze_Epoch_LR = 1e-3
     Unfreeze_Epoch_LR = 1e-4
 
-    Freeze_Epoch_Gamma = 0.96  # 0.96 ^ 50 = 0.12988
+    Freeze_Epoch_Gamma = 0.95 # 失误
     Unfreeze_Epoch_Gamma = 0.98  # 0.98^100 = 0.13262
 
     Num_Workers = 12
@@ -253,11 +278,195 @@ mAP = 2.36%
     Validation_Split = 0.05  # 验证集大小
 ```
 
-1. 一开始的过拟合是否是通过数据增强消除的，数据量还是太少
+-  Voc_Test_2_2_Epoch1170-Train_Loss2.6721-Val_Loss4.4449.pth
+
+```shell script
+6.45% = aeroplane AP 	||	score_threhold=0.5 : F1=0.13 ; Recall=8.72% ; Precision=26.80%
+0.86% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+4.70% = bird AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.51% ; Precision=100.00%
+0.02% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.21% = bottle AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.27% ; Precision=14.29%
+11.55% = bus AP 	||	score_threhold=0.5 : F1=0.12 ; Recall=6.62% ; Precision=75.00%
+6.86% = car AP 	||	score_threhold=0.5 : F1=0.03 ; Recall=1.68% ; Precision=76.92%
+11.59% = cat AP 	||	score_threhold=0.5 : F1=0.06 ; Recall=3.12% ; Precision=63.33%
+1.39% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.36% = cow AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.29% = diningtable AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.27% ; Precision=33.33%
+6.19% = dog AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.39% ; Precision=60.00%
+0.00% = horse AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.28% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+26.19% = person AP 	||	score_threhold=0.5 : F1=0.24 ; Recall=14.29% ; Precision=75.79%
+0.04% = pottedplant AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.68% = sheep AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.51% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+3.16% = train AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.61% ; Precision=20.00%
+9.49% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.06 ; Recall=2.91% ; Precision=75.00%
+mAP = 4.74%
+```
+
+# Voc_Test_2_3:
+
+```shell script
+    torch.multiprocessing.set_sharing_strategy('file_system')  # https://www.cnblogs.com/zhengbiqing/p/10478311.html
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    # torch.cuda.set_device(1)
+
+    # 0. 确保每次的伪随机数相同以便于问题的复现
+    numpy.random.seed(0)
+    torch.manual_seed(1)
+
+    # 1. 训练参数
+    Config = conf.config.VocConfig
+
+    print("config:\n", Config)
+
+    # 提示 OOM 或者显存不足请调小 Batch_size
+    Freeze_Train_Batch_Size = 64
+    Freeze_Eval_Batch_Size = 32
+
+    Unfreeze_Train_Batch_Size = 16
+    Unfreeze_Eval_Batch_Size = 8
+
+    Init_Epoch = 0  # 起始世代
+    Freeze_Epoch = 50  # 冻结训练的世代
+    Unfreeze_Epoch = 2000  # 总训练世代
+
+    Freeze_Epoch_LR = 1e-4
+    Unfreeze_Epoch_LR = 1e-4
+
+    # lr warm up
+    Freeze_Epoch_Gamma = 1.047  # 1.047 ^ 50 = 9.94
+    Unfreeze_Epoch_Gamma = 0.97  # 0.97 ^ 50 = 0.22, 0.97 ^ 250 = 0.0005
+
+    Num_Workers = 12
+    Suffle = True
+
+    Image_Set = "trainval"
+    Validation_Split = 0.01  # 验证集大小
+```
+
+# Voc_Test_2_4:
+
+```shell script
+    torch.multiprocessing.set_sharing_strategy('file_system')  # https://www.cnblogs.com/zhengbiqing/p/10478311.html
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    torch.cuda.set_device(1)
+
+    # 0. 确保每次的伪随机数相同以便于问题的复现
+    numpy.random.seed(0)
+    torch.manual_seed(1)
+
+    # 1. 训练参数
+    Config = conf.config.VocConfig
+
+    print("config:\n", Config)
+
+    # 提示 OOM 或者显存不足请调小 Batch_size
+    Freeze_Train_Batch_Size = 64
+    Freeze_Eval_Batch_Size = 32
+
+    Unfreeze_Train_Batch_Size = 16
+    Unfreeze_Eval_Batch_Size = 8
+
+    Init_Epoch = 0  # 起始世代
+    Freeze_Epoch = 50  # 冻结训练的世代
+    Unfreeze_Epoch = 2000  # 总训练世代
+
+    Freeze_Epoch_LR = 1e-4
+    Unfreeze_Epoch_LR = 1e-4
+
+    # lr warm up
+    Freeze_Epoch_Gamma = 0.96  # 0.96 ^ 50 = 0.12988
+    Unfreeze_Epoch_Gamma = 0.97  # 0.97 ^ 50 = 0.22, 0.97 ^ 250 = 0.0005
+
+    Num_Workers = 12
+    Suffle = True
+
+    Image_Set = "trainval"
+    Validation_Split = 0.01  # 验证集大小
+```
+
+# Voc_Test_2_5
+
+```shell script
+        self.lambda_xy = 0.05  # 预测框中心误差权重
+        self.lambda_wh = 0.05  # 预测框大小误差权重
+        self.lambda_noobj = 1.0  # 预测框置信度误差权重
+        self.lambda_obj = 1.0  # 预测框置信度误差权重
+        self.lambda_class = 0.5  # 预测框类别误差权重
+        self.lambda_conf = 1.0  # 预测框类别误差权重
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+
+    # 0. 确保每次的伪随机数相同以便于问题的复现
+    numpy.random.seed(0)
+    torch.manual_seed(1)
+
+    # 1. 训练参数
+    Config = conf.config.VocConfig
+
+    print("config:\n", Config)
+
+    # 提示 OOM 或者显存不足请调小 Batch_size
+    Freeze_Train_Batch_Size = 128
+    Freeze_Eval_Batch_Size = 64
+
+    Unfreeze_Train_Batch_Size = 32
+    Unfreeze_Eval_Batch_Size = 16
+
+    Init_Epoch = 0  # 起始世代
+    Freeze_Epoch = 50  # 冻结训练的世代
+    Unfreeze_Epoch = 2000  # 总训练世代
+
+    Freeze_Epoch_LR = 1e-3
+    Unfreeze_Epoch_LR = 1e-4
+
+    # lr warm up
+    Freeze_Epoch_Gamma = 0.96  # 0.96 ^ 50 = 0.12988
+    Unfreeze_Epoch_Gamma = 0.97  # 0.97 ^ 50 = 0.22, 0.97 ^ 250 = 0.0005
+
+    Num_Workers = 12
+    Suffle = True
+
+    Image_Set = "trainval"
+    Validation_Split = 0.05  # 验证集大小
+```
+
+- Voc_Test_2_5_Epoch1159-Train_Loss4.2977-Val_Loss4.4127.pth
+
+```shell script
+1.29% = aeroplane AP 	||	score_threhold=0.5 : F1=0.03 ; Recall=1.49% ; Precision=11.11%
+0.00% = bicycle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.99% = bird AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.17% ; Precision=100.00%
+0.00% = boat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.01% = bottle AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+5.42% = bus AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=1.26% ; Precision=66.67%
+1.86% = car AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.08% ; Precision=6.25%
+4.52% = cat AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.03% = chair AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.40% = diningtable AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+2.78% = dog AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.61% = motorbike AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+12.17% = person AP 	||	score_threhold=0.5 : F1=0.04 ; Recall=2.01% ; Precision=73.19%
+0.26% = sheep AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.20% ; Precision=100.00%
+0.03% = sofa AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+0.41% = train AP 	||	score_threhold=0.5 : F1=nan ; Recall=0.00% ; Precision=0.00%
+1.58% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.24% ; Precision=100.00%
+mAP = 1.62%
+```
+
+1. 一开始的过拟合是否是通过数据增强消除的，数据量还是太少，数据增强太多了？
 2. 陷入局部最优：
     - 是不是 bs 太大了导致训练陷入了鞍点
     - 还是学习率太小，学习率，
+    - lr warm up
 3. 为什么 eval 的时候 batch_size 要设置的比 train 小
+4. lambda:
+    - box: 0.05  # box loss gain
+    - cls: 0.5  # cls loss gain
+    - cls_pw: 1.0  # cls BCELoss positive_weight
+    - obj: 1.0  # obj loss gain (scale with pixels)
+    - obj_pw: 1.0  # obj BCELoss positive_weight
 
 
 ---

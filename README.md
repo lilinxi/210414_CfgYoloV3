@@ -455,7 +455,11 @@ mAP = 4.74%
 mAP = 1.62%
 ```
 
-1. 一开始的过拟合是否是通过数据增强消除的，数据量还是太少，数据增强太多了？
+1. 一开始的过拟合是否是通过数据增强消除的，数据量还是太少，数据增强太多了？不加数据增强更好？
+    - 无数据增强 pennfudan：
+        - 44.64% = person AP 	||	score_threhold=0.5 : F1=0.65 ; Recall=55.32% ; Precision=79.05%
+        - mAP = 44.64%
+    - RandomScaleImageAndBoxes pennfudan：
 2. 陷入局部最优：
     - 是不是 bs 太大了导致训练陷入了鞍点
     - 还是学习率太小，学习率，
@@ -467,6 +471,8 @@ mAP = 1.62%
     - cls_pw: 1.0  # cls BCELoss positive_weight
     - obj: 1.0  # obj loss gain (scale with pixels)
     - obj_pw: 1.0  # obj BCELoss positive_weight
+5. 加了数据增强训练不收敛，不加数据增强过拟合（lambda 对的情况下）
+6. 每轮迭代输出map
 
 
 ---

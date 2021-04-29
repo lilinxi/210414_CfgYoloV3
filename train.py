@@ -31,8 +31,8 @@ if __name__ == "__main__":
     Unfreeze_Train_Batch_Size = 32
     Unfreeze_Eval_Batch_Size = 16
 
-    Init_Epoch = 1000  # 起始世代
-    Freeze_Epoch = 1000  # 冻结训练的世代
+    Init_Epoch = 0  # 起始世代
+    Freeze_Epoch = 50  # 冻结训练的世代
     Unfreeze_Epoch = 2000  # 总训练世代
 
     Freeze_Epoch_LR = 1e-3
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     Parallel = True
 
-    Test_Name = "Voc_Test_2_5"
+    Test_Name = "Voc_Test_4_1"
 
     # 2. 创建 yolo 模型，训练前一定要修改 Config 里面的 classes 参数，训练的是 YoloNet 不是 Yolo
     yolov3_net = model.yolov3net.YoloV3Net(Config)

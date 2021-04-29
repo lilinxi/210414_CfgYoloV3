@@ -25,8 +25,8 @@ if __name__ == "__main__":
     print("config:\n", Config)
 
     # 提示 OOM 或者显存不足请调小 Batch_size
-    Freeze_Train_Batch_Size = 8
-    Freeze_Eval_Batch_Size = 8
+    Freeze_Train_Batch_Size = 16
+    Freeze_Eval_Batch_Size = 16
 
     Unfreeze_Train_Batch_Size = 8
     Unfreeze_Eval_Batch_Size = 8
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     Parallel = True
 
-    Test_Name = "Pennfudan_Test_3_2"
+    Test_Name = "Pennfudan_Test_3_3"
 
     # 2. 创建 yolo 模型，训练前一定要修改 Config 里面的 classes 参数，训练的是 YoloNet 不是 Yolo
     yolov3_net = model.yolov3net.YoloV3Net(Config)

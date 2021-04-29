@@ -9,6 +9,34 @@ import torch.utils.data.dataloader
 import model.yolov3net, model.yolov3loss
 
 
+def compute_map(
+        yolov3: model.yolov3net.YoloV3Net,
+        validate_data_loader: torch.utils.data.dataloader.DataLoader,  # 验证集
+        eval_batch_size: int,
+        cuda: bool,
+):
+    os.system("rm -rf ./outer_map_input")
+    os.system("mkdir outer_map_input")
+    os.system("mkdir outer_map_input/detection_result")
+    os.system("mkdir outer_map_input/ground_truth")
+
+    yolov3 = yolov3.eval()
+    for batch_index, (tensord_images, truth_annotation_list) in enumerate(validate_data_loader):
+        print("batch_index:", batch_index)
+        if cuda:
+            tensord_images = tensord_images.cuda()
+        for step in range(eval_batch_size):
+            print("step:", step)
+            # 4. 预测结果并记录
+            yolov3.predict_with_eval(
+                tensord_images[step],
+                truth_annotation_list[step],
+            )
+
+    os.system("python3 ./compute_map.py")
+    os.system("rm -rf ./outer_map_input")
+
+
 def train_one_epoch(
         test_name: str,  # 实验名称
         yolov3_net: model.yolov3net.YoloV3Net,  # 网络模型

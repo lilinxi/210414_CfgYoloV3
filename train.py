@@ -128,6 +128,10 @@ if __name__ == "__main__":
         sampler=valid_sampler,
     )
 
+    # 初始 map
+    train_utils.compute_map(yolov3_net, freeze_validate_data_loader, Freeze_Eval_Batch_Size, Config["cuda"])
+    exit(-1)
+
     # 7. 粗略训练预测头
 
     # 7.1 优化器和学习率调整器

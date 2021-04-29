@@ -34,10 +34,10 @@ def get_transforms(config: dict, train: bool) -> Compose:
     transforms = []
     if train:
         transforms.append(ReformAndExtractBoxes())
-        transforms.append(ScaleImageAndBoxes(config=config))
-        # transforms.append(RandomScaleImageAndBoxes(config=config))
-        # transforms.append(RandomTransformImage())
-        # transforms.append(RandomFlipImageAndBoxes(config=config))
+        # transforms.append(ScaleImageAndBoxes(config=config))
+        transforms.append(RandomScaleImageAndBoxes(config=config))
+        transforms.append(RandomTransformImage())
+        transforms.append(RandomFlipImageAndBoxes(config=config))
         transforms.append(NormImageAndBoxes(config=config))
     else:
         transforms.append(ScaleImage(config=config))
@@ -157,9 +157,23 @@ class RandomTransformImage(object):
         if rand(0.0, 1.0) < 0.5:
             new_image = torchvision.transforms.ColorJitter(
                 brightness=(1.0, 10.0),  # 亮度的偏移幅度
+                # contrast=(1.0, 10.0),  # 对比度偏移幅度
+                # saturation=(1.0, 10.0),  # 饱和度偏移幅度
+                # hue=(0.2, 0.4),  # 色相偏移幅度
+            )(scaled_image)
+        if rand(0.0, 1.0) < 0.5:
+            new_image = torchvision.transforms.ColorJitter(
+                # brightness=(1.0, 10.0),  # 亮度的偏移幅度
                 contrast=(1.0, 10.0),  # 对比度偏移幅度
+                # saturation=(1.0, 10.0),  # 饱和度偏移幅度
+                # hue=(0.2, 0.4),  # 色相偏移幅度
+            )(scaled_image)
+        if rand(0.0, 1.0) < 0.5:
+            new_image = torchvision.transforms.ColorJitter(
+                # brightness=(1.0, 10.0),  # 亮度的偏移幅度
+                # contrast=(1.0, 10.0),  # 对比度偏移幅度
                 saturation=(1.0, 10.0),  # 饱和度偏移幅度
-                hue=(0.2, 0.4),  # 色相偏移幅度
+                # hue=(0.2, 0.4),  # 色相偏移幅度
             )(scaled_image)
         if rand(0.0, 1.0) < 0.01:
             new_image = torchvision.transforms.Grayscale(num_output_channels=3)(new_image)
